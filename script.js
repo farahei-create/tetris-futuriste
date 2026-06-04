@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE v2 - HOLD + Ghost Piece + High Score + Full Cleanup === */
+/* === TETRIS NÉON FUTURISTE v2.2 - Auto-hide controls + Layout fix === */
 
 let BLOCK_SIZE = 28;
 const COLS = 10;
@@ -41,6 +41,8 @@ let touchStartX = 0;
 let touchStartY = 0;
 let touchStartTime = 0;
 
+let hideControlsTimer = null;
+
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d', { alpha: true });
 
@@ -58,6 +60,7 @@ const scoreEl = document.getElementById('score');
 const levelEl = document.getElementById('level');
 const linesEl = document.getElementById('lines');
 const bestScoreEl = document.getElementById('best-score');
+const controlsOverlay = document.getElementById('controls-overlay');
 
 function loadBestScore() {
   const saved = localStorage.getItem('tetrisNeonBestScore');
@@ -73,6 +76,26 @@ function saveBestScore() {
     localStorage.setItem('tetrisNeonBestScore', bestScore);
     if (bestScoreEl) bestScoreEl.textContent = `Record : ${bestScore.toString().padStart(6, '0')}`;
   }
+}
+
+function showControls() {
+  if (!controlsOverlay) return;
+  clearTimeout(hideControlsTimer);
+  controlsOverlay.style.transition = 'opacity 0.25s ease';
+  controlsOverlay.style.opacity = '0.92';
+  controlsOverlay.style.pointerEvents = 'auto';
+}
+
+function hideControls() {
+  if (!controlsOverlay) return;
+  controlsOverlay.style.transition = 'opacity 0.7s ease';
+  controlsOverlay.style.opacity = '0.12';
+  controlsOverlay.style.pointerEvents = 'none';
+}
+
+function scheduleHideControls() {
+  clearTimeout(hideControlsTimer);
+  hideControlsTimer = setTimeout(hideControls, 2400);
 }
 
 function initBackgroundBubbles() {
@@ -159,6 +182,8 @@ function resetGame() {
   drawHoldPiece();
   resizeGame();
   draw();
+  showControls();
+  scheduleHideControls();
 }
 
 function updateUI() {
@@ -503,7 +528,8 @@ function drawBoard() {
   }
 }
 
-// === HOLOGRAPHIC NEON PIECE RENDERING ===
+// HOLOGRAPHIC
+
 function drawBlock(x, y, color) {
   const px = x * BLOCK_SIZE;
   const py = y * BLOCK_SIZE;
@@ -567,7 +593,7 @@ function gameLoop(timestamp = 0) {
   animationFrame = requestAnimationFrame(gameLoop);
 }
 
-// === SOUNDS (Web Audio) ===
+// SOUNDS
 let audioCtx;
 function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -579,6 +605,7 @@ function playSound(type) {
   const now = audioCtx.currentTime;
 
   if (type === 'clear') {
+    // ... (même code que avant, inchangé)
     const noise = audioCtx.createBufferSource();
     const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.52, audioCtx.sampleRate);
     const data = noiseBuffer.getChannelData(0);
@@ -694,6 +721,10 @@ function handleTouchStart(e) {
   touchStartX = e.touches[0].clientX - rect.left;
   touchStartY = e.touches[0].clientY - rect.top;
   touchStartTime = Date.now();
+
+  // Afficher les boutons au toucher
+  showControls();
+  scheduleHideControls();
 }
 
 function handleTouchEnd(e) {
@@ -709,16 +740,25 @@ function handleTouchEnd(e) {
 
   if (duration < 200 && absX < 20 && absY < 20) {
     rotatePiece();
+    showControls();
+    scheduleHideControls();
     return;
   }
   if (absX > absY && absX > 30) {
     if (deltaX > 0) moveRight();
     else moveLeft();
+    showControls();
+    scheduleHideControls();
     return;
   }
   if (deltaY > 35) {
-    if (duration < 160 && deltaY > 80) hardDrop();
-    else softDrop();
+    if (duration < 160 && deltaY > 80) {
+      hardDrop();
+    } else {
+      softDrop();
+    }
+    showControls();
+    scheduleHideControls();
   }
 }
 
@@ -728,6 +768,9 @@ function handleKeyboard(e) {
     if (e.key.toLowerCase() === 'p' && !gameOver) togglePause();
     return;
   }
+  showControls();
+  scheduleHideControls();
+
   switch (e.key) {
     case 'ArrowLeft': case 'a': case 'A': moveLeft(); break;
     case 'ArrowRight': case 'd': case 'D': moveRight(); break;
@@ -745,6 +788,8 @@ function startGame() {
   resetGame();
   lastDropTime = performance.now();
   animationFrame = requestAnimationFrame(gameLoop);
+  showControls();
+  scheduleHideControls();
 }
 
 function togglePause() {
@@ -757,6 +802,8 @@ function togglePause() {
     pauseOverlay.classList.remove('active');
     lastDropTime = performance.now();
     animationFrame = requestAnimationFrame(gameLoop);
+    showControls();
+    scheduleHideControls();
   }
 }
 
@@ -784,6 +831,12 @@ function init() {
   resizeGame();
   loadBestScore();
 
+  // Auto-hide controls
+  if (controlsOverlay) {
+    controlsOverlay.style.opacity = '0.12';
+    controlsOverlay.style.pointerEvents = 'none';
+  }
+
   window.addEventListener('resize', () => {
     clearTimeout(window.resizeTimeout);
     window.resizeTimeout = setTimeout(resizeGame, 120);
@@ -794,10 +847,23 @@ function init() {
   canvas.addEventListener('touchend', handleTouchEnd, { passive: true });
   document.addEventListener('gesturestart', e => e.preventDefault());
 
+  // Clic sur les boutons = reset timer
+  document.querySelectorAll('.control-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showControls();
+      scheduleHideControls();
+    });
+  });
+
   ctx.fillStyle = '#12071f';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  console.log('%c[Tetris Neon v2] HOLD + Ghost Piece + High Score activés !', 'color:#00f9ff');
+  // Cacher les boutons au démarrage
+  setTimeout(() => {
+    if (!gameOver && !paused && controlsOverlay) hideControls();
+  }, 1800);
+
+  console.log('%c[Tetris Neon v2.2] Auto-hide controls + nouvelle disposition activés !', 'color:#00f9ff');
 }
 
 init();

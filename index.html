@@ -17,7 +17,7 @@
       <div class="holo-frame"></div>
       <canvas id="board" width="320" height="640"></canvas>
 
-      <!-- HOLD Panel (left side - always available) -->
+      <!-- HOLD Panel (left side) -->
       <div class="hold-panel">
         <div class="hud-item">
           <div class="hud-label">HOLD</div>
@@ -42,17 +42,15 @@
         </div>
       </div>
 
-      <!-- Controls -->
-      <div class="controls-overlay minimal">
-        <div class="controls-left">
+      <!-- Controls - Auto-hide quand inactif + nouvelle disposition -->
+      <div id="controls-overlay" class="controls-overlay">
+        <div class="controls-main">
           <button class="control-btn" onclick="moveLeft()" aria-label="Gauche">←</button>
-          <button class="control-btn" onclick="softDrop()" aria-label="Bas">↓</button>
+          <button class="control-btn rotate" onclick="rotatePiece()" aria-label="Rotation">↻</button>
           <button class="control-btn" onclick="moveRight()" aria-label="Droite">→</button>
         </div>
-
-        <div class="controls-right">
-          <button class="control-btn rotate" onclick="rotatePiece()" aria-label="Rotation">↻</button>
-          <button class="control-btn hard-drop" onclick="hardDrop()" aria-label="Chute rapide">⇩</button>
+        <div class="controls-bottom">
+          <button class="control-btn down" onclick="softDrop()" aria-label="Bas">↓</button>
         </div>
       </div>
 
@@ -83,7 +81,7 @@
     </div>
 
     <div class="instructions">
-      Glisse sur le plateau pour jouer • Appuie pour tourner • HOLD pour réserver une pièce
+      Glisse vers le bas rapidement pour chute instantanée • Touche l’écran pour afficher les boutons
     </div>
   </div>
 
