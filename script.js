@@ -411,7 +411,81 @@ function restartGame() {
   gameOverOverlay.classList.remove('active'); pauseOverlay.classList.remove('active'); startOverlay.classList.remove('active');
   resetGame(); lastDropTime = performance.now(); animationFrame = requestAnimationFrame(gameLoop);
 }
+// ==================== SUPPORTER + HOLD + 2 PIÈCES ====================
 
+let isSupporter = false;
+let jetons = 0;
+let heldPiece = null;
+
+// Charger le statut Supporter
+function loadSupporterStatus() {
+  const saved = localStorage.getItem('tetrisSupporter');
+  if (saved === 'true') {
+    isSupporter = true;
+    document.getElementById('hold-container').style.display = 'block';
+    // Afficher la 2ème pièce
+    const next2 = document.getElementById('next-piece-2');
+    if (next2) next2.style.display = 'block';
+  }
+}
+
+// Sauvegarder le statut
+function saveSupporterStatus() {
+  localStorage.setItem('tetrisSupporter', isSupporter);
+}
+
+// Fonction Hold (seulement pour Supporters)
+function holdPiece() {
+  if (!isSupporter || !currentPiece || gameOver || paused) return;
+
+  if (heldPiece === null) {
+    heldPiece = { type: currentPiece.type, rotation: 0 };
+    createNewPiece();
+  } else {
+    // Échanger avec la pièce tenue
+    const tempType = currentPiece.type;
+    currentPiece.type = heldPiece.type;
+    currentPiece.rotation = 0;
+    heldPiece.type = tempType;
+  }
+  draw();
+}
+
+// Modifier légèrement drawNextPiece pour supporter 2 pièces
+const originalDrawNextPiece = drawNextPiece;
+drawNextPiece = function() {
+  originalDrawNextPiece();
+
+  if (!isSupporter || !nextPieceType) return;
+
+  const next2Canvas = document.getElementById('next-piece-2');
+  if (!next2Canvas) return;
+
+  const ctx2 = next2Canvas.getContext('2d');
+  ctx2.fillStyle = '#0a0a1a';
+  ctx2.fillRect(0, 0, next2Canvas.width, next2Canvas.height);
+
+  // Dessiner la 2ème pièce (simplifié)
+  const shape = SHAPES[nextPieceType][0];
+  const color = COLORS[nextPieceType];
+  const block = 10;
+  const offsetX = 8;
+  const offsetY = 8;
+
+  ctx2.shadowBlur = 8;
+  ctx2.shadowColor = color;
+
+  shape.forEach(([dx, dy]) => {
+    ctx2.fillStyle = color;
+    ctx2.fillRect(offsetX + dx * block, offsetY + dy * block, block - 1, block - 1);
+    ctx2.strokeStyle = '#ffffff';
+    ctx2.lineWidth = 1;
+    ctx2.strokeRect(offsetX + dx * block, offsetY + dy * block, block - 1, block - 1);
+  });
+  ctx2.shadowBlur = 0;
+};
+
+// Bonus jetons sur clearLines (à intégrer plus tard)
 function init() {
   initBoard(); resizeGame();
   window.addEventListener('resize', () => { clearTimeout(window.resizeTimeout); window.resizeTimeout = setTimeout(resizeGame, 120); });
