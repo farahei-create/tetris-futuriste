@@ -1,11 +1,11 @@
-/* === TETRIS NÉON FUTURISTE - Plein écran sur mobile === */
+/* === TETRIS NÉON FUTURISTE - Holographic piece rendering === */
 
 let BLOCK_SIZE = 28;
 const COLS = 10;
 const ROWS = 20;
 
 const COLORS = {
-  'I': '#00f9ff', 'O': '#ffea00', 'T': '#9d4edd', 'S': '#00ff9d',
+  'I': '#00f9ff', 'O': '#ffea00', 'T': '#c084fc', 'S': '#00ff9d',
   'Z': '#ff2e63', 'J': '#3a86ff', 'L': '#ff9f1c'
 };
 
@@ -52,7 +52,6 @@ const scoreEl = document.getElementById('score');
 const levelEl = document.getElementById('level');
 const linesEl = document.getElementById('lines');
 
-// === BULLES FLOTTANTES ===
 function initBackgroundBubbles() {
   backgroundBubbles = [];
   for (let i = 0; i < 30; i++) {
@@ -88,28 +87,20 @@ function drawBackgroundBubbles() {
   ctx.shadowBlur = 0;
 }
 
-// === REDIMENSIONNEMENT PLEIN ÉCRAN ===
 function resizeGame() {
-  // On donne BEAUCOUP plus d'espace au plateau de jeu
   const availableWidth = Math.min(window.innerWidth * 0.96, 400);
-  const availableHeight = Math.min(window.innerHeight * 0.68, 620); // plus grand !
-
+  const availableHeight = Math.min(window.innerHeight * 0.68, 620);
   const sizeByWidth = Math.floor(availableWidth / COLS);
   const sizeByHeight = Math.floor(availableHeight / ROWS);
-
   BLOCK_SIZE = Math.min(sizeByWidth, sizeByHeight);
   if (BLOCK_SIZE > 34) BLOCK_SIZE = 34;
   if (BLOCK_SIZE < 24) BLOCK_SIZE = 24;
-
   canvas.width = COLS * BLOCK_SIZE;
   canvas.height = ROWS * BLOCK_SIZE;
-
   const nextSize = Math.min(100, BLOCK_SIZE * 3.8 + 6);
   nextCanvas.width = nextSize;
   nextCanvas.height = nextSize;
-
   initBackgroundBubbles();
-
   if (!gameOver && !paused && currentPiece) { draw(); drawNextPiece(); }
 }
 
@@ -141,11 +132,14 @@ function drawNextPiece() {
   if (!nextPieceType) return;
   const shape = SHAPES[nextPieceType][0]; const color = COLORS[nextPieceType];
   const block = Math.floor(size / 4.2); const offsetX = Math.floor((size - block * 4) / 2); const offsetY = Math.floor((size - block * 3) / 2);
-  nextCtx.shadowBlur = 9; nextCtx.shadowColor = color;
+  nextCtx.shadowBlur = 12; nextCtx.shadowColor = color;
   shape.forEach(([dx, dy]) => {
-    nextCtx.fillStyle = color; nextCtx.fillRect(offsetX + dx * block, offsetY + dy * block, block - 2, block - 2);
-    nextCtx.strokeStyle = '#ffffff'; nextCtx.lineWidth = 2; nextCtx.strokeRect(offsetX + dx * block, offsetY + dy * block, block - 2, block - 2);
-  }); nextCtx.shadowBlur = 0;
+    const px = offsetX + dx * block; const py = offsetY + dy * block;
+    nextCtx.fillStyle = 'rgba(10,10,26,0.6)'; nextCtx.fillRect(px + 1, py + 1, block - 2, block - 2);
+    nextCtx.strokeStyle = color; nextCtx.lineWidth = 2.5; nextCtx.strokeRect(px + 1, py + 1, block - 2, block - 2);
+    nextCtx.strokeStyle = '#ffffff'; nextCtx.lineWidth = 1; nextCtx.strokeRect(px + 3, py + 3, block - 6, block - 6);
+  });
+  nextCtx.shadowBlur = 0;
 }
 
 function collision(piece) {
@@ -164,7 +158,6 @@ function move(dir) {
 }
 
 function moveLeft() { move(-1); }
-
 function moveRight() { move(1); }
 
 function softDrop() {
@@ -253,16 +246,13 @@ function drawBoard() {
   const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
   grad.addColorStop(0, '#12071f'); grad.addColorStop(0.5, '#1a0a2e'); grad.addColorStop(1, '#0f0618');
   ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
-
   drawBackgroundBubbles();
   drawGrid();
-
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
       if (board[y][x] !== 0) drawBlock(x, y, board[y][x]);
     }
   }
-
   if (glitchIntensity > 0) {
     ctx.fillStyle = `rgba(255,255,255,${glitchIntensity * 0.2})`;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -273,20 +263,41 @@ function drawBoard() {
   }
 }
 
+// === HOLOGRAPHIC NEON PIECE RENDERING ===
 function drawBlock(x, y, color) {
-  const px = x * BLOCK_SIZE; const py = y * BLOCK_SIZE;
-  ctx.shadowBlur = 12; ctx.shadowColor = color; ctx.fillStyle = color;
-  ctx.fillRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
-  ctx.shadowBlur = 0; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
-  ctx.strokeRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
-  ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 8, BLOCK_SIZE - 8);
+  const px = x * BLOCK_SIZE;
+  const py = y * BLOCK_SIZE;
+  const size = BLOCK_SIZE;
+
+  ctx.fillStyle = 'rgba(10, 10, 26, 0.85)';
+  ctx.fillRect(px + 1, py + 1, size - 2, size - 2);
+
+  ctx.shadowBlur = 18;
+  ctx.shadowColor = color;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3.5;
+  ctx.strokeRect(px + 2, py + 2, size - 4, size - 4);
+
+  ctx.shadowBlur = 6;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(px + 4.5, py + 4.5, size - 9, size - 9);
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillRect(px + 5, py + 5, size - 10, size - 10);
 }
 
 function drawCurrentPiece() {
   if (!currentPiece) return;
   const shape = SHAPES[currentPiece.type][currentPiece.rotation];
-  ctx.shadowBlur = 16; ctx.shadowColor = currentPiece.color;
-  shape.forEach(([dx, dy]) => { const x = currentPiece.x + dx; const y = currentPiece.y + dy; if (y >= 0) drawBlock(x, y, currentPiece.color); });
+  ctx.shadowBlur = 20;
+  ctx.shadowColor = currentPiece.color;
+  shape.forEach(([dx, dy]) => {
+    const x = currentPiece.x + dx;
+    const y = currentPiece.y + dy;
+    if (y >= 0) drawBlock(x, y, currentPiece.color);
+  });
   ctx.shadowBlur = 0;
 }
 
@@ -296,12 +307,16 @@ function gameLoop(timestamp = 0) {
   if (gameOver || paused) return;
   if (!lastDropTime) lastDropTime = timestamp;
   const delta = timestamp - lastDropTime;
-  if (delta > dropInterval) { const oldY = currentPiece.y; currentPiece.y++; if (collision(currentPiece)) { currentPiece.y = oldY; lockPiece(); } lastDropTime = timestamp; }
+  if (delta > dropInterval) {
+    const oldY = currentPiece.y; currentPiece.y++;
+    if (collision(currentPiece)) { currentPiece.y = oldY; lockPiece(); }
+    lastDropTime = timestamp;
+  }
   updateBackgroundBubbles(); updateParticles(); draw();
   animationFrame = requestAnimationFrame(gameLoop);
 }
 
-// === SONS ===
+// Sons
 let audioCtx;
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
@@ -347,7 +362,7 @@ function playSound(type) {
   osc.start(now); osc.stop(now + duration + 0.03);
 }
 
-// === GESTES ===
+// Touch & clavier
 function handleTouchStart(e) {
   if (gameOver || paused || !currentPiece) return;
   const rect = canvas.getBoundingClientRect();
@@ -365,7 +380,6 @@ function handleTouchEnd(e) {
   if (deltaY > 35) { if (duration < 160 && deltaY > 80) hardDrop(); else softDrop(); }
 }
 
-// === CLAVIER ===
 function handleKeyboard(e) {
   if (gameOver || paused) { if (e.key.toLowerCase() === 'r') restartGame(); if (e.key.toLowerCase() === 'p' && !gameOver) togglePause(); return; }
   switch (e.key) {
@@ -406,7 +420,7 @@ function init() {
   canvas.addEventListener('touchend', handleTouchEnd, { passive: true });
   document.addEventListener('gesturestart', e => e.preventDefault());
   ctx.fillStyle = '#12071f'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-  console.log('%c[Tetris Neon] Mode plein écran mobile activé !', 'color:#c084fc');
+  console.log('%c[Tetris Neon] Holographic pieces enabled!', 'color:#c084fc');
 }
 
 init();
