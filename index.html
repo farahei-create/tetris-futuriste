@@ -17,21 +17,27 @@
       <div class="holo-frame"></div>
       <canvas id="board" width="320" height="640"></canvas>
 
+      <!-- HUD -->
       <div class="floating-hud">
         <div class="hud-panel left">
           <div class="hud-item"><div class="hud-label">SCORE</div><div id="score">000000</div></div>
           <div class="hud-item"><div class="hud-label">NIVEAU</div><div id="level">01</div></div>
           <div class="hud-item"><div class="hud-label">LIGNES</div><div id="lines">000</div></div>
         </div>
+
         <div class="hud-panel right">
           <div class="hud-item next">
             <div class="hud-label">SUIVANTE</div>
-            <canvas id="next-piece" width="82" height="82"></canvas>
+            <div id="next-pieces-container" style="display: flex; gap: 6px; justify-content: center; align-items: center;">
+              <canvas id="next-piece" width="70" height="70"></canvas>
+              <!-- Deuxième pièce (visible seulement pour Supporters) -->
+              <canvas id="next-piece-2" width="50" height="50" style="display: none; border: 1px solid #ffd700; border-radius: 4px;"></canvas>
+            </div>
           </div>
         </div>
       </div>
 
-            <!-- Clean premium controls (signature style) -->
+      <!-- Controls -->
       <div class="controls-overlay minimal">
         <div class="controls-left">
           <button class="control-btn" onclick="moveLeft()" aria-label="Gauche">←</button>
@@ -45,6 +51,17 @@
         </div>
       </div>
 
+      <!-- Hold Button (uniquement pour Supporters) -->
+      <div id="hold-container" style="position: absolute; top: 45%; left: -60px; transform: translateY(-50%); z-index: 20; display: none;">
+        <button id="hold-btn" onclick="holdPiece()" 
+                style="width: 52px; height: 52px; font-size: 0.85rem; font-weight: 700; 
+                       border-radius: 10px; background: rgba(20,15,35,0.6); color: #ffd700; 
+                       border: 2px solid #ffd700; box-shadow: 0 0 12px #ffd700;">
+          HOLD
+        </button>
+      </div>
+
+      <!-- Overlays -->
       <div id="start-overlay" class="start-overlay active">
         <div class="overlay-content">
           <h2>BIENVENUE DANS LE FUTUR</h2>
