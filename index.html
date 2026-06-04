@@ -14,36 +14,38 @@
     </header>
 
     <div class="game-wrapper" style="position: relative;">
+      <div class="holo-frame"></div>
       <canvas id="board" width="320" height="640"></canvas>
 
-      <!-- HUD flottant -->
       <div class="floating-hud">
-        <div class="hud-item"><div class="hud-label">SCORE</div><div id="score">000000</div></div>
-        <div class="hud-item"><div class="hud-label">NIVEAU</div><div id="level">01</div></div>
-        <div class="hud-item"><div class="hud-label">LIGNES</div><div id="lines">000</div></div>
-        <div class="hud-item next"><div class="hud-label">SUIVANTE</div><canvas id="next-piece" width="82" height="82"></canvas></div>
+        <div class="hud-panel left">
+          <div class="hud-item"><div class="hud-label">SCORE</div><div id="score">000000</div></div>
+          <div class="hud-item"><div class="hud-label">NIVEAU</div><div id="level">01</div></div>
+          <div class="hud-item"><div class="hud-label">LIGNES</div><div id="lines">000</div></div>
+        </div>
+        <div class="hud-panel right">
+          <div class="hud-item next">
+            <div class="hud-label">SUIVANTE</div>
+            <canvas id="next-piece" width="82" height="82"></canvas>
+          </div>
+        </div>
       </div>
 
-      <!-- Boutons bulles Game Boy style -->
-      <div class="controls-overlay">
-        <!-- 3 boutons à gauche -->
+      <div class="controls-overlay minimal">
         <div class="controls-left">
-          <button onclick="moveLeft()">⬅️</button>
-          <button onclick="softDrop()">⬇️</button>
-          <button onclick="moveRight()">➡️</button>
+          <button class="control-btn" onclick="moveLeft()">⬅️</button>
+          <button class="control-btn" onclick="softDrop()">⬇️</button>
+          <button class="control-btn" onclick="moveRight()">➡️</button>
         </div>
-
-        <!-- 2 boutons à droite -->
         <div class="controls-right">
-          <button class="rotate" onclick="rotatePiece()">⟳</button>
-          <button class="hard-drop" onclick="hardDrop()">⏬</button>
+          <button class="control-btn rotate" onclick="rotatePiece()">⟳</button>
+          <button class="control-btn hard-drop" onclick="hardDrop()">⏬</button>
         </div>
       </div>
 
-      <!-- Overlays -->
       <div id="start-overlay" class="start-overlay active">
         <div class="overlay-content">
-          <h2 style="color:#00f9ff;">BIENVENUE DANS LE FUTUR</h2>
+          <h2>BIENVENUE DANS LE FUTUR</h2>
           <p>Prêt à empiler des blocs néon ?</p>
           <button onclick="startGame()">LANCER LE JEU</button>
         </div>
@@ -51,14 +53,14 @@
 
       <div id="pause-overlay" class="pause-overlay">
         <div class="overlay-content">
-          <h2 style="color:#ffea00;">PAUSE</h2>
+          <h2>PAUSE</h2>
           <button onclick="togglePause()">REPRENDRE</button>
         </div>
       </div>
 
       <div id="game-over-overlay" class="game-over-overlay">
         <div class="overlay-content">
-          <h2 style="color:#ff2e63;">GAME OVER</h2>
+          <h2>GAME OVER</h2>
           <p id="final-score">Score final : 000000</p>
           <button onclick="restartGame()">RECOMMENCER</button>
         </div>
@@ -66,7 +68,7 @@
     </div>
 
     <div class="instructions">
-      Swipe sur le plateau ou utilise les boutons bulles. 3 à gauche • 2 à droite (style Game Boy)
+      Glisse sur le plateau pour jouer • Appuie pour tourner
     </div>
   </div>
 
