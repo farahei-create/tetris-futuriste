@@ -1,8 +1,8 @@
-/* === TETRIS NÉON FUTURISTE - Script complet === */
+/* === TETRIS NÉON FUTURISTE - Script complet (version responsive mobile) === */
 
+let BLOCK_SIZE = 28; // sera ajusté dynamiquement
 const COLS = 10;
 const ROWS = 20;
-const BLOCK_SIZE = 32;
 
 // Couleurs néon cyberpunk
 const COLORS = {
@@ -92,6 +92,37 @@ const scoreEl = document.getElementById('score');
 const levelEl = document.getElementById('level');
 const linesEl = document.getElementById('lines');
 
+// === REDIMENSIONNEMENT RESPONSIVE (iPhone friendly) ===
+function resizeGame() {
+  // Calculer la taille idéale du bloc en fonction de l'écran
+  const availableWidth = Math.min(window.innerWidth * 0.92, 380);
+  const availableHeight = Math.min(window.innerHeight * 0.52, 520);
+
+  const sizeByWidth = Math.floor(availableWidth / COLS);
+  const sizeByHeight = Math.floor(availableHeight / ROWS);
+
+  BLOCK_SIZE = Math.min(sizeByWidth, sizeByHeight);
+
+  // Limites de lisibilité
+  if (BLOCK_SIZE > 32) BLOCK_SIZE = 32;
+  if (BLOCK_SIZE < 22) BLOCK_SIZE = 22;
+
+  // Appliquer la nouvelle taille au canvas
+  canvas.width = COLS * BLOCK_SIZE;
+  canvas.height = ROWS * BLOCK_SIZE;
+
+  // Ajuster aussi le canvas "pièce suivante" un peu
+  const nextSize = Math.min(110, BLOCK_SIZE * 4 + 10);
+  nextCanvas.width = nextSize;
+  nextCanvas.height = nextSize;
+
+  // Redessiner immédiatement si le jeu est en cours
+  if (!gameOver && !paused && currentPiece) {
+    draw();
+    drawNextPiece();
+  }
+}
+
 // === INITIALISATION ===
 function initBoard() {
   board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
@@ -109,6 +140,7 @@ function resetGame() {
   currentPiece = null;
   updateUI();
   createNewPiece();
+  resizeGame(); // important pour mobile
   draw();
 }
 
@@ -134,48 +166,47 @@ function createNewPiece() {
     color: COLORS[type]
   };
 
-  // Préparer la suivante
   const types = Object.keys(SHAPES);
   nextPieceType = types[Math.floor(Math.random() * types.length)];
 
   drawNextPiece();
 
-  // Vérifier game over immédiat
   if (collision(currentPiece)) {
     endGame();
   }
 }
 
 function drawNextPiece() {
+  const size = nextCanvas.width;
   nextCtx.fillStyle = '#0a0a1a';
-  nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+  nextCtx.fillRect(0, 0, size, size);
 
   if (!nextPieceType) return;
 
   const shape = SHAPES[nextPieceType][0];
   const color = COLORS[nextPieceType];
-  const size = 24;
-  const offsetX = 30;
-  const offsetY = 20;
+  const block = Math.floor(size / 4.5);
+  const offsetX = Math.floor((size - block * 4) / 2);
+  const offsetY = Math.floor((size - block * 3) / 2);
 
-  nextCtx.shadowBlur = 15;
+  nextCtx.shadowBlur = 12;
   nextCtx.shadowColor = color;
 
   shape.forEach(([dx, dy]) => {
     nextCtx.fillStyle = color;
     nextCtx.fillRect(
-      offsetX + dx * size,
-      offsetY + dy * size,
-      size - 2,
-      size - 2
+      offsetX + dx * block,
+      offsetY + dy * block,
+      block - 2,
+      block - 2
     );
     nextCtx.strokeStyle = '#ffffff';
     nextCtx.lineWidth = 2;
     nextCtx.strokeRect(
-      offsetX + dx * size,
-      offsetY + dy * size,
-      size - 2,
-      size - 2
+      offsetX + dx * block,
+      offsetY + dy * block,
+      block - 2,
+      block - 2
     );
   });
 
@@ -224,7 +255,7 @@ function softDrop() {
     currentPiece.y = oldY;
     lockPiece();
   } else {
-    score += 1; // petit bonus soft drop
+    score += 1;
     updateUI();
     draw();
   }
@@ -238,7 +269,7 @@ function hardDrop() {
     currentPiece.y++;
     dropDistance++;
   }
-  currentPiece.y--; // revenir à la dernière position valide
+  currentPiece.y--;
 
   score += dropDistance * 2;
   updateUI();
@@ -252,9 +283,7 @@ function rotatePiece() {
   const oldRotation = currentPiece.rotation;
   currentPiece.rotation = (currentPiece.rotation + 1) % 4;
 
-  // Wall kick simple
   if (collision(currentPiece)) {
-    // Essayer de décaler à gauche/droite
     currentPiece.x--;
     if (collision(currentPiece)) {
       currentPiece.x += 2;
@@ -296,14 +325,11 @@ function clearLines() {
 
   for (let y = ROWS - 1; y >= 0; y--) {
     if (board[y].every(cell => cell !== 0)) {
-      // Créer des particules pour l'effet futuriste
       createLineParticles(y);
-
-      // Supprimer la ligne
       board.splice(y, 1);
       board.unshift(Array(COLS).fill(0));
       cleared++;
-      y++; // rester sur la même ligne après splice
+      y++;
     }
   }
 
@@ -316,8 +342,6 @@ function clearLines() {
 
     updateUI();
     playSound('clear');
-
-    // Flash visuel sur le canvas
     flashBoard();
   }
 }
@@ -331,7 +355,7 @@ function createLineParticles(rowY) {
       vy: (Math.random() - 0.5) * 4 - 1,
       alpha: 1,
       color: '#00f9ff',
-      size: Math.random() * 6 + 3
+      size: Math.random() * 5 + 3
     });
   }
 }
@@ -341,7 +365,7 @@ function updateParticles() {
     const p = particles[i];
     p.x += p.vx;
     p.y += p.vy;
-    p.vy += 0.15; // gravité légère
+    p.vy += 0.15;
     p.alpha -= 0.03;
 
     if (p.alpha <= 0) {
@@ -362,7 +386,6 @@ function drawParticles() {
 }
 
 function flashBoard() {
-  // Effet flash néon rapide
   const originalFill = ctx.fillStyle;
   ctx.fillStyle = 'rgba(0, 249, 255, 0.35)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -396,7 +419,6 @@ function drawBoard() {
 
   drawGrid();
 
-  // Dessiner les blocs verrouillés
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
       if (board[y][x] !== 0) {
@@ -410,20 +432,17 @@ function drawBlock(x, y, color) {
   const px = x * BLOCK_SIZE;
   const py = y * BLOCK_SIZE;
 
-  // Glow néon principal
-  ctx.shadowBlur = 18;
+  ctx.shadowBlur = 16;
   ctx.shadowColor = color;
   ctx.fillStyle = color;
   ctx.fillRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
 
-  // Bordure blanche brillante
   ctx.shadowBlur = 0;
   ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 2.5;
+  ctx.lineWidth = 2;
   ctx.strokeRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
 
-  // Effet intérieur léger
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
   ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 8, BLOCK_SIZE - 8);
 }
 
@@ -432,7 +451,7 @@ function drawCurrentPiece() {
 
   const shape = SHAPES[currentPiece.type][currentPiece.rotation];
 
-  ctx.shadowBlur = 22;
+  ctx.shadowBlur = 20;
   ctx.shadowColor = currentPiece.color;
 
   shape.forEach(([dx, dy]) => {
@@ -461,7 +480,6 @@ function gameLoop(timestamp = 0) {
   const delta = timestamp - lastDropTime;
 
   if (delta > dropInterval) {
-    // Descente automatique
     const oldY = currentPiece.y;
     currentPiece.y++;
 
@@ -642,21 +660,23 @@ function restartGame() {
 // === INITIALISATION GÉNÉRALE ===
 function init() {
   initBoard();
-  // Afficher l'overlay de départ (déjà active dans le HTML)
 
-  // Clavier
+  // Redimensionnement initial + à chaque rotation d'écran
+  resizeGame();
+  window.addEventListener('resize', () => {
+    clearTimeout(window.resizeTimeout);
+    window.resizeTimeout = setTimeout(resizeGame, 150);
+  });
+
   document.addEventListener('keydown', handleKeyboard);
-
-  // Empêcher le zoom sur mobile
   document.addEventListener('gesturestart', e => e.preventDefault());
 
-  // Premier dessin (grille vide)
+  // Dessin initial de la grille
   ctx.fillStyle = '#0a0a1a';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawGrid();
 
-  // Message d'accueil dans la console
-  console.log('%c[Tetris Neon] Jeu initialisé. Prêt pour 2084 !', 'color:#00f9ff');
+  console.log('%c[Tetris Neon] Jeu initialisé et responsive. Amuse-toi bien !', 'color:#00f9ff');
 }
 
 // Lancement
