@@ -14,6 +14,15 @@
     </header>
 
     <div class="game-wrapper" style="position: relative;">
+      <!-- Bouton HOLD (uniquement visible pour les Supporters) -->
+<div id="hold-container" style="position: absolute; top: 42%; left: -58px; z-index: 20; display: none;">
+  <button id="hold-btn" onclick="holdPiece()" 
+          style="width: 50px; height: 50px; font-size: 0.85rem; font-weight: 700; 
+                 border-radius: 10px; background: rgba(25, 18, 45, 0.6); color: #ffd700; 
+                 border: 2px solid #ffd700; box-shadow: 0 0 10px #ffd700;">
+    HOLD
+  </button>
+</div>
       <div class="holo-frame"></div>
       <canvas id="board" width="320" height="640"></canvas>
 
