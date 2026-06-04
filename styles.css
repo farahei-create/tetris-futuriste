@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE - Final polish (start screen + more transparent buttons) === */
+/* === TETRIS NÉON FUTURISTE - v2: HOLD + Ghost Piece + High Score + Cleanup === */
 
 body {
   background: #05050f; color: #e0e0ff; font-family: system-ui, -apple-system, sans-serif;
@@ -44,12 +44,59 @@ h1 {
   font-family: 'Courier New', monospace;
 }
 
-#next-piece { border: 1px solid #ff00aa; box-shadow: 0 0 4px #ff00aa; border-radius: 4px; background: #0a0a1a; }
+#next-piece, #hold-piece {
+  border: 1px solid #ff00aa;
+  box-shadow: 0 0 8px #ff00aa;
+  border-radius: 6px;
+  background: #0a0a1a;
+  display: block;
+}
+
+/* === HOLD PANEL (left side) === */
+.hold-panel {
+  position: absolute;
+  top: 22%;
+  left: -95px;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.hold-panel .hud-item {
+  min-width: 82px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.hold-btn {
+  width: 58px !important;
+  height: 34px !important;
+  font-size: 0.72rem !important;
+  font-weight: 700;
+  border-radius: 8px;
+  background: rgba(15, 10, 30, 0.65);
+  color: #00f9ff;
+  border: 2px solid #00f9ff;
+  box-shadow: 0 0 12px #00f9ff;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  touch-action: manipulation;
+  backdrop-filter: blur(8px);
+}
+
+.hold-btn:active {
+  background: #00f9ff;
+  color: #05050f;
+  box-shadow: 0 0 22px #00f9ff;
+  transform: scale(0.95);
+}
 
 /* === CONTROLS - Higher + More transparent === */
 .controls-overlay {
   position: absolute;
-  bottom: 70px;                    /* ← Plus haut */
+  bottom: 70px;
   left: 0;
   right: 0;
   display: flex;
@@ -68,7 +115,7 @@ h1 {
   font-size: 1.35rem;
   font-weight: 600;
   border-radius: 10px;
-  background: rgba(15, 10, 30, 0.28);   /* Plus transparent */
+  background: rgba(15, 10, 30, 0.28);
   color: #fff;
   border: 1px solid rgba(0, 249, 255, 0.35);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
@@ -79,7 +126,7 @@ h1 {
   justify-content: center;
   touch-action: manipulation;
   backdrop-filter: blur(10px);
-  opacity: 0.7;                         /* Plus transparent */
+  opacity: 0.7;
 }
 
 .control-btn:active {
@@ -120,11 +167,12 @@ h1 {
   border-color: #9d4edd; box-shadow: 0 0 10px #9d4edd;
 }
 
-/* === PAGE D'ACCUEIL (START SCREEN) - BEAUCOUP MIEUX === */
+/* === PAGE D'ACCUEIL (START SCREEN) === */
 .start-overlay {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(8, 5, 18, 0.92);
-  display: none; flex-direction: column; justify-content: center; align-items: center;
+  display: none; flex-direction: column;
+  justify-content: center; align-items: center;
   z-index: 20; border-radius: 8px;
   backdrop-filter: blur(6px);
 }
@@ -140,11 +188,17 @@ h1 {
   background: linear-gradient(90deg, #00f9ff, #c084fc);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   text-shadow: 0 0 20px #00f9ff;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .overlay-content p {
-  font-size: 1rem; color: #b0a0d0; margin-bottom: 28px;
+  font-size: 1rem; color: #b0a0d0; margin-bottom: 8px;
+}
+
+#best-score {
+  font-size: 0.95rem; color: #ffd700; text-shadow: 0 0 8px #ffd700;
+  margin-bottom: 20px;
+  font-family: 'Courier New', monospace;
 }
 
 .overlay-content button {
@@ -171,6 +225,15 @@ h1 {
 .instructions { margin-top: 10px; font-size: 0.65rem; color: #555; text-align: center; }
 
 @media (max-width: 480px) {
+  .hold-panel {
+    left: -82px;
+    top: 18%;
+  }
+  .hold-btn {
+    width: 52px !important;
+    height: 30px !important;
+    font-size: 0.68rem !important;
+  }
   .controls-overlay button { width: 52px; height: 52px; font-size: 1.5rem; }
   .controls-overlay button.rotate { width: 58px; height: 58px; font-size: 1.7rem; }
   .controls-overlay button.hard-drop { width: 46px; height: 46px; }

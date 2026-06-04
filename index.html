@@ -14,17 +14,17 @@
     </header>
 
     <div class="game-wrapper" style="position: relative;">
-      <!-- Bouton HOLD (uniquement visible pour les Supporters) -->
-<div id="hold-container" style="position: absolute; top: 42%; left: -58px; z-index: 20; display: none;">
-  <button id="hold-btn" onclick="holdPiece()" 
-          style="width: 50px; height: 50px; font-size: 0.85rem; font-weight: 700; 
-                 border-radius: 10px; background: rgba(25, 18, 45, 0.6); color: #ffd700; 
-                 border: 2px solid #ffd700; box-shadow: 0 0 10px #ffd700;">
-    HOLD
-  </button>
-</div>
       <div class="holo-frame"></div>
       <canvas id="board" width="320" height="640"></canvas>
+
+      <!-- HOLD Panel (left side - always available) -->
+      <div class="hold-panel">
+        <div class="hud-item">
+          <div class="hud-label">HOLD</div>
+          <canvas id="hold-piece" width="70" height="70"></canvas>
+        </div>
+        <button id="hold-btn" onclick="holdPiece()" class="control-btn hold-btn">HOLD</button>
+      </div>
 
       <!-- HUD -->
       <div class="floating-hud">
@@ -36,14 +36,8 @@
 
         <div class="hud-panel right">
           <div class="hud-item next">
-  <div class="hud-label">SUIVANTE</div>
-  <div style="display: flex; gap: 8px; align-items: center;">
-    <canvas id="next-piece" width="70" height="70"></canvas>
-    <!-- Deuxième pièce (visible seulement pour Supporters) -->
-    <canvas id="next-piece-2" width="50" height="50" 
-            style="display: none; border: 1px solid #ffd700; border-radius: 5px;"></canvas>
-  </div>
-</div>
+            <div class="hud-label">SUIVANTE</div>
+            <canvas id="next-piece" width="70" height="70"></canvas>
           </div>
         </div>
       </div>
@@ -62,21 +56,12 @@
         </div>
       </div>
 
-      <!-- Hold Button (uniquement pour Supporters) -->
-      <div id="hold-container" style="position: absolute; top: 45%; left: -60px; transform: translateY(-50%); z-index: 20; display: none;">
-        <button id="hold-btn" onclick="holdPiece()" 
-                style="width: 52px; height: 52px; font-size: 0.85rem; font-weight: 700; 
-                       border-radius: 10px; background: rgba(20,15,35,0.6); color: #ffd700; 
-                       border: 2px solid #ffd700; box-shadow: 0 0 12px #ffd700;">
-          HOLD
-        </button>
-      </div>
-
       <!-- Overlays -->
       <div id="start-overlay" class="start-overlay active">
         <div class="overlay-content">
           <h2>BIENVENUE DANS LE FUTUR</h2>
           <p>Prêt à empiler des blocs néon ?</p>
+          <div id="best-score">Record : 000000</div>
           <button onclick="startGame()">LANCER LE JEU</button>
         </div>
       </div>
@@ -98,7 +83,7 @@
     </div>
 
     <div class="instructions">
-      Glisse sur le plateau pour jouer • Appuie pour tourner
+      Glisse sur le plateau pour jouer • Appuie pour tourner • HOLD pour réserver une pièce
     </div>
   </div>
 
