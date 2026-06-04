@@ -487,7 +487,7 @@ drawNextPiece = function() {
 
 // Bonus jetons sur clearLines (à intégrer plus tard)
 function init() {
-  initBoard(); resizeGame();
+  initBoard(); resizeGame(); loadSupporterStatus();
   window.addEventListener('resize', () => { clearTimeout(window.resizeTimeout); window.resizeTimeout = setTimeout(resizeGame, 120); });
   document.addEventListener('keydown', handleKeyboard);
   canvas.addEventListener('touchstart', handleTouchStart, { passive: true });
