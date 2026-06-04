@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE - Styles optimisés plein écran mobile === */
+/* === TETRIS NÉON FUTURISTE - Boutons transparents overlay sur le jeu === */
 
 :root {
   --neon-cyan: #00f9ff; --neon-magenta: #ff00aa; --neon-purple: #9d4edd;
@@ -8,114 +8,128 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: var(--dark-bg); color: var(--text);
+  background: #05050f; color: var(--text);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   min-height: 100vh; overflow-x: hidden;
-  background-image: linear-gradient(rgba(0,249,255,0.025) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(0,249,255,0.025) 1px, transparent 1px);
-  background-size: 38px 38px;
 }
 
 .container {
-  max-width: 1100px; margin: 0 auto; padding: 6px 8px;
+  max-width: 1100px; margin: 0 auto; padding: 4px 6px;
   display: flex; flex-direction: column; align-items: center;
 }
 
-header { text-align: center; margin-bottom: 8px; }
+header { text-align: center; margin-bottom: 6px; }
 
 h1 {
-  font-size: 2.3rem; font-weight: 900; letter-spacing: 3px; text-transform: uppercase;
+  font-size: 2.1rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
   background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta), var(--neon-purple));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 8px var(--neon-cyan), 0 0 16px var(--neon-magenta); margin-bottom: 1px;
+  text-shadow: 0 0 8px var(--neon-cyan); margin-bottom: 0;
 }
 
-.subtitle { font-size: 0.8rem; color: #777; letter-spacing: 1.5px; text-transform: uppercase; }
+.subtitle { font-size: 0.72rem; color: #666; letter-spacing: 1px; }
 
 .game-wrapper {
-  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: flex-start;
-  position: relative; width: 100%;
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 #board {
   border: 3px solid var(--neon-cyan);
-  box-shadow: 0 0 10px var(--neon-cyan), 0 0 22px rgba(0,249,255,0.3), inset 0 0 12px rgba(0,0,0,0.5);
-  border-radius: 6px; background: #0a0a1a; image-rendering: crisp-edges; touch-action: none;
-  max-width: 100%; height: auto;
+  box-shadow: 0 0 12px var(--neon-cyan), 0 0 25px rgba(0,249,255,0.35);
+  border-radius: 8px; background: #0a0a1a; image-rendering: crisp-edges;
+  touch-action: none; display: block; width: 100%; height: auto;
 }
 
-.sidebar {
-  display: flex; flex-direction: column; gap: 8px; min-width: 140px;
+/* HUD flottant en haut du jeu */
+.floating-hud {
+  position: absolute; top: 8px; left: 8px; right: 8px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  z-index: 5; pointer-events: none;
 }
 
-.panel {
-  background: rgba(10,10,26,0.65); border: 1.5px solid var(--neon-purple);
-  box-shadow: 0 0 8px rgba(157,78,221,0.2); border-radius: 8px; padding: 8px 10px; text-align: center;
-  backdrop-filter: blur(6px);
+.hud-item {
+  background: rgba(10, 10, 26, 0.65);
+  border: 1.5px solid var(--neon-purple);
+  border-radius: 6px; padding: 4px 8px; text-align: center;
+  backdrop-filter: blur(8px); min-width: 68px;
+  pointer-events: auto;
 }
 
-.panel h3 { font-size: 0.65rem; color: var(--neon-purple); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+.hud-item.next { min-width: 82px; }
+
+.hud-label {
+  font-size: 0.55rem; color: var(--neon-purple); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px;
+}
 
 #score, #level, #lines {
-  font-size: 1.6rem; font-weight: 700; color: var(--neon-cyan); text-shadow: 0 0 6px var(--neon-cyan);
-  font-family: 'Courier New', monospace;
+  font-size: 1.35rem; font-weight: 700; color: var(--neon-cyan); text-shadow: 0 0 6px var(--neon-cyan);
+  font-family: 'Courier New', monospace; line-height: 1;
 }
 
-#next-piece { border: 1.5px solid var(--neon-magenta); box-shadow: 0 0 6px var(--neon-magenta); border-radius: 5px; background: #0a0a1a; margin: 0 auto; display: block; }
-
-.controls {
-  margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: 100%; max-width: 420px;
+#next-piece {
+  border: 1px solid var(--neon-magenta); box-shadow: 0 0 5px var(--neon-magenta);
+  border-radius: 4px; background: #0a0a1a; display: block; margin: 2px auto 0;
 }
 
-.controls button {
-  flex: 1 1 58px; min-height: 58px; font-size: 1.7rem; background: rgba(10,10,26,0.5);
-  color: #fff; border: 2px solid var(--neon-cyan); border-radius: 12px; cursor: pointer;
-  transition: all 0.1s ease; box-shadow: 0 0 8px var(--neon-cyan); user-select: none; touch-action: manipulation;
-  backdrop-filter: blur(8px);
+/* Boutons transparents overlay en bas du jeu */
+.controls-overlay {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px; z-index: 10;
+  background: rgba(5, 5, 15, 0.35);
+  padding: 6px 8px; border-radius: 16px;
+  backdrop-filter: blur(12px); border: 1px solid rgba(0,249,255,0.2);
 }
 
-.controls button:active { background: rgba(0,249,255,0.22); transform: scale(0.88); box-shadow: 0 0 20px var(--neon-cyan); }
+.controls-overlay button {
+  width: 52px; height: 52px; font-size: 1.65rem; border-radius: 12px;
+  background: rgba(10,10,26,0.45); color: #fff;
+  border: 2px solid var(--neon-cyan); cursor: pointer;
+  transition: all 0.1s ease; box-shadow: 0 0 8px var(--neon-cyan);
+  user-select: none; touch-action: manipulation;
+}
 
-.controls button.rotate { border-color: var(--neon-magenta); box-shadow: 0 0 8px var(--neon-magenta); }
+.controls-overlay button:active {
+  background: rgba(0,249,255,0.3); transform: scale(0.9); box-shadow: 0 0 18px var(--neon-cyan);
+}
 
-.controls button.hard-drop { border-color: var(--neon-purple); box-shadow: 0 0 8px var(--neon-purple); font-size: 1.45rem; }
+.controls-overlay button.rotate { border-color: var(--neon-magenta); box-shadow: 0 0 8px var(--neon-magenta); }
 
+.controls-overlay button.hard-drop { border-color: var(--neon-purple); box-shadow: 0 0 8px var(--neon-purple); font-size: 1.4rem; }
+
+/* Overlays */
 .start-overlay, .game-over-overlay, .pause-overlay {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(5,5,15,0.9); display: none; flex-direction: column; justify-content: center; align-items: center;
-  z-index: 10; border-radius: 6px; text-align: center;
+  background: rgba(5,5,15,0.88); display: none; flex-direction: column;
+  justify-content: center; align-items: center; z-index: 20; border-radius: 8px;
 }
 
 .start-overlay.active, .game-over-overlay.active, .pause-overlay.active { display: flex; }
 
-.overlay-content h2 { font-size: 2.1rem; margin-bottom: 12px; text-shadow: 0 0 12px var(--neon-cyan); }
+.overlay-content { text-align: center; }
 
-.overlay-content p { margin-bottom: 18px; font-size: 0.9rem; color: #aaa; }
+.overlay-content h2 { font-size: 2rem; margin-bottom: 10px; text-shadow: 0 0 12px var(--neon-cyan); }
+
+.overlay-content p { margin-bottom: 16px; font-size: 0.85rem; color: #aaa; }
 
 .overlay-content button {
-  padding: 10px 34px; font-size: 1.1rem; background: transparent; color: var(--neon-cyan);
-  border: 2.5px solid var(--neon-cyan); border-radius: 50px; cursor: pointer; text-transform: uppercase;
-  letter-spacing: 2px; box-shadow: 0 0 14px var(--neon-cyan); transition: all 0.2s;
+  padding: 9px 30px; font-size: 1rem; background: transparent; color: var(--neon-cyan);
+  border: 2px solid var(--neon-cyan); border-radius: 50px; cursor: pointer;
+  text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 12px var(--neon-cyan);
 }
 
-.overlay-content button:hover { background: var(--neon-cyan); color: #05050f; box-shadow: 0 0 28px var(--neon-cyan); }
+.instructions { margin-top: 12px; max-width: 380px; text-align: center; font-size: 0.68rem; color: #555; }
 
-.instructions { margin-top: 16px; max-width: 420px; text-align: center; font-size: 0.72rem; color: #555; line-height: 1.35; }
-
-/* === Mode plein écran mobile === */
+/* Mobile compact */
 @media (max-width: 480px) {
-  h1 { font-size: 1.85rem; letter-spacing: 2px; }
-  .subtitle { font-size: 0.7rem; }
-  .container { padding: 4px 6px; }
-  .game-wrapper { gap: 8px; }
-  .sidebar {
-    flex-direction: row; flex-wrap: wrap; justify-content: center;
-    min-width: auto; gap: 5px; width: 100%;
-  }
-  .panel { min-width: 92px; padding: 5px 7px; }
-  .panel h3 { font-size: 0.58rem; }
-  #score, #level, #lines { font-size: 1.35rem; }
-  .controls { margin-top: 6px; gap: 5px; max-width: 100%; }
-  .controls button { min-height: 54px; font-size: 1.55rem; flex: 1 1 52px; border-radius: 10px; }
-  .instructions { font-size: 0.65rem; margin-top: 10px; }
+  h1 { font-size: 1.7rem; }
+  .game-wrapper { max-width: 100%; }
+  .floating-hud { top: 6px; left: 6px; right: 6px; }
+  .hud-item { min-width: 60px; padding: 3px 6px; }
+  .hud-label { font-size: 0.5rem; }
+  #score, #level, #lines { font-size: 1.2rem; }
+  .controls-overlay { bottom: 8px; gap: 5px; padding: 5px 6px; border-radius: 14px; }
+  .controls-overlay button { width: 48px; height: 48px; font-size: 1.5rem; }
 }
