@@ -13,44 +13,37 @@
       <p class="subtitle">2084 • CYBERPUNK EDITION</p>
     </header>
 
-    <!-- Wrapper avec position relative pour overlay des boutons -->
     <div class="game-wrapper" style="position: relative;">
-      <!-- Canvas principal -->
       <canvas id="board" width="320" height="640"></canvas>
 
-      <!-- Infos flottantes en haut -->
+      <!-- HUD flottant -->
       <div class="floating-hud">
-        <div class="hud-item">
-          <div class="hud-label">SCORE</div>
-          <div id="score">000000</div>
-        </div>
-        <div class="hud-item">
-          <div class="hud-label">NIVEAU</div>
-          <div id="level">01</div>
-        </div>
-        <div class="hud-item">
-          <div class="hud-label">LIGNES</div>
-          <div id="lines">000</div>
-        </div>
-        <div class="hud-item next">
-          <div class="hud-label">SUIVANTE</div>
-          <canvas id="next-piece" width="90" height="90"></canvas>
-        </div>
+        <div class="hud-item"><div class="hud-label">SCORE</div><div id="score">000000</div></div>
+        <div class="hud-item"><div class="hud-label">NIVEAU</div><div id="level">01</div></div>
+        <div class="hud-item"><div class="hud-label">LIGNES</div><div id="lines">000</div></div>
+        <div class="hud-item next"><div class="hud-label">SUIVANTE</div><canvas id="next-piece" width="82" height="82"></canvas></div>
       </div>
 
-      <!-- Boutons de contrôle transparents directement sur le jeu -->
+      <!-- Boutons bulles Game Boy style -->
       <div class="controls-overlay">
-        <button id="btn-left" onclick="moveLeft()">⬅️</button>
-        <button id="btn-rotate" class="rotate" onclick="rotatePiece()">⟳</button>
-        <button id="btn-right" onclick="moveRight()">➡️</button>
-        <button id="btn-down" onclick="softDrop()">⬇️</button>
-        <button id="btn-hard" class="hard-drop" onclick="hardDrop()">⏬</button>
+        <!-- 3 boutons à gauche -->
+        <div class="controls-left">
+          <button onclick="moveLeft()">⬅️</button>
+          <button onclick="softDrop()">⬇️</button>
+          <button onclick="moveRight()">➡️</button>
+        </div>
+
+        <!-- 2 boutons à droite -->
+        <div class="controls-right">
+          <button class="rotate" onclick="rotatePiece()">⟳</button>
+          <button class="hard-drop" onclick="hardDrop()">⏬</button>
+        </div>
       </div>
 
-      <!-- Overlays (start, pause, game over) -->
+      <!-- Overlays -->
       <div id="start-overlay" class="start-overlay active">
         <div class="overlay-content">
-          <h2 style="color:#00f9ff; text-shadow:0 0 18px #00f9ff;">BIENVENUE DANS LE FUTUR</h2>
+          <h2 style="color:#00f9ff;">BIENVENUE DANS LE FUTUR</h2>
           <p>Prêt à empiler des blocs néon ?</p>
           <button onclick="startGame()">LANCER LE JEU</button>
         </div>
@@ -65,7 +58,7 @@
 
       <div id="game-over-overlay" class="game-over-overlay">
         <div class="overlay-content">
-          <h2 style="color:#ff2e63; text-shadow:0 0 18px #ff2e63;">GAME OVER</h2>
+          <h2 style="color:#ff2e63;">GAME OVER</h2>
           <p id="final-score">Score final : 000000</p>
           <button onclick="restartGame()">RECOMMENCER</button>
         </div>
@@ -73,8 +66,7 @@
     </div>
 
     <div class="instructions">
-      <strong>Clavier :</strong> Flèches / WASD • ↑ ou X = Tourner • Espace = Chute rapide • P = Pause<br>
-      <strong>Mobile :</strong> Swipe sur le plateau ou boutons transparents en bas. Gestes fluides sur iPhone !
+      Swipe sur le plateau ou utilise les boutons bulles. 3 à gauche • 2 à droite (style Game Boy)
     </div>
   </div>
 
