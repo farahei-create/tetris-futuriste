@@ -1,135 +1,123 @@
-/* === TETRIS NÉON FUTURISTE - Boutons transparents overlay sur le jeu === */
+/* === TETRIS NÉON FUTURISTE - Boutons bulles style Game Boy === */
 
 :root {
   --neon-cyan: #00f9ff; --neon-magenta: #ff00aa; --neon-purple: #9d4edd;
-  --dark-bg: #05050f; --darker: #0a0a1a; --text: #e0e0ff;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
 body {
-  background: #05050f; color: var(--text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  min-height: 100vh; overflow-x: hidden;
+  background: #05050f; color: #e0e0ff; font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100vh; margin: 0; padding: 0; overflow-x: hidden;
 }
 
 .container {
-  max-width: 1100px; margin: 0 auto; padding: 4px 6px;
-  display: flex; flex-direction: column; align-items: center;
+  max-width: 420px; margin: 0 auto; padding: 4px 6px;
 }
 
-header { text-align: center; margin-bottom: 6px; }
+header { text-align: center; margin-bottom: 4px; }
 
 h1 {
-  font-size: 2.1rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
+  font-size: 1.95rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
   background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta), var(--neon-purple));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 8px var(--neon-cyan); margin-bottom: 0;
 }
 
-.subtitle { font-size: 0.72rem; color: #666; letter-spacing: 1px; }
+.subtitle { font-size: 0.68rem; color: #666; }
 
 .game-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
+  position: relative; width: 100%; max-width: 400px; margin: 0 auto;
 }
 
 #board {
   border: 3px solid var(--neon-cyan);
-  box-shadow: 0 0 12px var(--neon-cyan), 0 0 25px rgba(0,249,255,0.35);
+  box-shadow: 0 0 12px var(--neon-cyan), 0 0 24px rgba(0,249,255,0.35);
   border-radius: 8px; background: #0a0a1a; image-rendering: crisp-edges;
   touch-action: none; display: block; width: 100%; height: auto;
 }
 
-/* HUD flottant en haut du jeu */
+/* HUD flottant */
 .floating-hud {
   position: absolute; top: 8px; left: 8px; right: 8px;
-  display: flex; justify-content: space-between; align-items: flex-start;
-  z-index: 5; pointer-events: none;
+  display: flex; justify-content: space-between; z-index: 5; pointer-events: none;
 }
 
 .hud-item {
-  background: rgba(10, 10, 26, 0.65);
-  border: 1.5px solid var(--neon-purple);
-  border-radius: 6px; padding: 4px 8px; text-align: center;
-  backdrop-filter: blur(8px); min-width: 68px;
-  pointer-events: auto;
+  background: rgba(15, 10, 30, 0.7); border: 1.5px solid var(--neon-purple);
+  border-radius: 6px; padding: 3px 7px; text-align: center; backdrop-filter: blur(8px);
+  min-width: 62px; pointer-events: auto;
 }
 
-.hud-item.next { min-width: 82px; }
-
-.hud-label {
-  font-size: 0.55rem; color: var(--neon-purple); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px;
-}
+.hud-label { font-size: 0.52rem; color: var(--neon-purple); text-transform: uppercase; letter-spacing: 0.5px; }
 
 #score, #level, #lines {
-  font-size: 1.35rem; font-weight: 700; color: var(--neon-cyan); text-shadow: 0 0 6px var(--neon-cyan);
-  font-family: 'Courier New', monospace; line-height: 1;
+  font-size: 1.25rem; font-weight: 700; color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan);
+  font-family: 'Courier New', monospace;
 }
 
-#next-piece {
-  border: 1px solid var(--neon-magenta); box-shadow: 0 0 5px var(--neon-magenta);
-  border-radius: 4px; background: #0a0a1a; display: block; margin: 2px auto 0;
-}
+#next-piece { border: 1px solid var(--neon-magenta); box-shadow: 0 0 4px var(--neon-magenta); border-radius: 4px; background: #0a0a1a; margin-top: 2px; }
 
-/* Boutons transparents overlay en bas du jeu */
+/* === BOUTONS BULLES GAME BOY STYLE === */
 .controls-overlay {
-  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 6px; z-index: 10;
-  background: rgba(5, 5, 15, 0.35);
-  padding: 6px 8px; border-radius: 16px;
-  backdrop-filter: blur(12px); border: 1px solid rgba(0,249,255,0.2);
+  position: absolute; bottom: 12px; left: 0; right: 0;
+  display: flex; justify-content: space-between; padding: 0 12px; z-index: 15;
+  pointer-events: none;
+}
+
+/* Groupe gauche (3 boutons) */
+.controls-left {
+  display: flex; gap: 8px; pointer-events: auto;
+}
+
+/* Groupe droit (2 boutons) */
+.controls-right {
+  display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: auto;
 }
 
 .controls-overlay button {
-  width: 52px; height: 52px; font-size: 1.65rem; border-radius: 12px;
-  background: rgba(10,10,26,0.45); color: #fff;
-  border: 2px solid var(--neon-cyan); cursor: pointer;
-  transition: all 0.1s ease; box-shadow: 0 0 8px var(--neon-cyan);
-  user-select: none; touch-action: manipulation;
+  width: 58px; height: 58px; font-size: 1.7rem; border-radius: 50% !important; /* ROND COMME UNE BULLE */
+  background: rgba(15, 10, 30, 0.55);
+  color: #fff; border: 3px solid var(--neon-cyan);
+  box-shadow: 0 0 12px var(--neon-cyan), inset 0 0 8px rgba(255,255,255,0.15);
+  cursor: pointer; transition: all 0.1s ease;
+  display: flex; align-items: center; justify-content: center;
+  touch-action: manipulation;
+  backdrop-filter: blur(10px);
 }
 
 .controls-overlay button:active {
-  background: rgba(0,249,255,0.3); transform: scale(0.9); box-shadow: 0 0 18px var(--neon-cyan);
+  background: rgba(0,249,255,0.35); transform: scale(0.88);
+  box-shadow: 0 0 22px var(--neon-cyan);
 }
 
-.controls-overlay button.rotate { border-color: var(--neon-magenta); box-shadow: 0 0 8px var(--neon-magenta); }
+.controls-overlay button.rotate {
+  width: 64px; height: 64px; font-size: 1.9rem;
+  border-color: var(--neon-magenta); box-shadow: 0 0 14px var(--neon-magenta);
+}
 
-.controls-overlay button.hard-drop { border-color: var(--neon-purple); box-shadow: 0 0 8px var(--neon-purple); font-size: 1.4rem; }
+.controls-overlay button.hard-drop {
+  width: 52px; height: 52px; font-size: 1.5rem;
+  border-color: var(--neon-purple); box-shadow: 0 0 10px var(--neon-purple);
+}
 
 /* Overlays */
 .start-overlay, .game-over-overlay, .pause-overlay {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(5,5,15,0.88); display: none; flex-direction: column;
-  justify-content: center; align-items: center; z-index: 20; border-radius: 8px;
+  background: rgba(5,5,15,0.88); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 20;
+  border-radius: 8px;
 }
 
 .start-overlay.active, .game-over-overlay.active, .pause-overlay.active { display: flex; }
 
-.overlay-content { text-align: center; }
-
-.overlay-content h2 { font-size: 2rem; margin-bottom: 10px; text-shadow: 0 0 12px var(--neon-cyan); }
-
-.overlay-content p { margin-bottom: 16px; font-size: 0.85rem; color: #aaa; }
+.overlay-content h2 { font-size: 1.9rem; margin-bottom: 10px; }
 
 .overlay-content button {
-  padding: 9px 30px; font-size: 1rem; background: transparent; color: var(--neon-cyan);
-  border: 2px solid var(--neon-cyan); border-radius: 50px; cursor: pointer;
-  text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 12px var(--neon-cyan);
+  padding: 8px 26px; font-size: 0.95rem; border: 2px solid var(--neon-cyan); border-radius: 50px;
 }
 
-.instructions { margin-top: 12px; max-width: 380px; text-align: center; font-size: 0.68rem; color: #555; }
+.instructions { margin-top: 10px; font-size: 0.65rem; color: #555; text-align: center; }
 
-/* Mobile compact */
+/* Mobile */
 @media (max-width: 480px) {
-  h1 { font-size: 1.7rem; }
-  .game-wrapper { max-width: 100%; }
-  .floating-hud { top: 6px; left: 6px; right: 6px; }
-  .hud-item { min-width: 60px; padding: 3px 6px; }
-  .hud-label { font-size: 0.5rem; }
-  #score, #level, #lines { font-size: 1.2rem; }
-  .controls-overlay { bottom: 8px; gap: 5px; padding: 5px 6px; border-radius: 14px; }
-  .controls-overlay button { width: 48px; height: 48px; font-size: 1.5rem; }
+  .controls-overlay button { width: 54px; height: 54px; font-size: 1.55rem; }
+  .controls-overlay button.rotate { width: 60px; height: 60px; font-size: 1.75rem; }
+  .controls-overlay button.hard-drop { width: 48px; height: 48px; }
 }
