@@ -1,12 +1,8 @@
-/* === TETRIS NÉON FUTURISTE - Boutons bulles style Game Boy === */
-
-:root {
-  --neon-cyan: #00f9ff; --neon-magenta: #ff00aa; --neon-purple: #9d4edd;
-}
+/* === TETRIS NÉON FUTURISTE - Final polish (start screen + more transparent buttons) === */
 
 body {
   background: #05050f; color: #e0e0ff; font-family: system-ui, -apple-system, sans-serif;
-  min-height: 100vh; margin: 0; padding: 0; overflow-x: hidden;
+  margin: 0; padding: 0; overflow-x: hidden;
 }
 
 .container {
@@ -16,108 +12,126 @@ body {
 header { text-align: center; margin-bottom: 4px; }
 
 h1 {
-  font-size: 1.95rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
-  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta), var(--neon-purple));
+  font-size: 1.95rem; font-weight: 900; letter-spacing: 2px;
+  background: linear-gradient(90deg, #00f9ff, #ff00aa, #9d4edd);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
 
-.subtitle { font-size: 0.68rem; color: #666; }
-
-.game-wrapper {
-  position: relative; width: 100%; max-width: 400px; margin: 0 auto;
-}
+.game-wrapper { position: relative; width: 100%; max-width: 400px; margin: 0 auto; }
 
 #board {
-  border: 3px solid var(--neon-cyan);
-  box-shadow: 0 0 12px var(--neon-cyan), 0 0 24px rgba(0,249,255,0.35);
+  border: 3px solid #00f9ff;
+  box-shadow: 0 0 12px #00f9ff, 0 0 24px rgba(0,249,255,0.35);
   border-radius: 8px; background: #0a0a1a; image-rendering: crisp-edges;
   touch-action: none; display: block; width: 100%; height: auto;
 }
 
-/* HUD flottant */
 .floating-hud {
   position: absolute; top: 8px; left: 8px; right: 8px;
   display: flex; justify-content: space-between; z-index: 5; pointer-events: none;
 }
 
 .hud-item {
-  background: rgba(15, 10, 30, 0.7); border: 1.5px solid var(--neon-purple);
+  background: rgba(15, 10, 30, 0.7); border: 1.5px solid #9d4edd;
   border-radius: 6px; padding: 3px 7px; text-align: center; backdrop-filter: blur(8px);
   min-width: 62px; pointer-events: auto;
 }
 
-.hud-label { font-size: 0.52rem; color: var(--neon-purple); text-transform: uppercase; letter-spacing: 0.5px; }
+.hud-label { font-size: 0.52rem; color: #9d4edd; text-transform: uppercase; }
 
 #score, #level, #lines {
-  font-size: 1.25rem; font-weight: 700; color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan);
+  font-size: 1.25rem; font-weight: 700; color: #00f9ff; text-shadow: 0 0 5px #00f9ff;
   font-family: 'Courier New', monospace;
 }
 
-#next-piece { border: 1px solid var(--neon-magenta); box-shadow: 0 0 4px var(--neon-magenta); border-radius: 4px; background: #0a0a1a; margin-top: 2px; }
+#next-piece { border: 1px solid #ff00aa; box-shadow: 0 0 4px #ff00aa; border-radius: 4px; background: #0a0a1a; }
 
-/* === BOUTONS BULLES GAME BOY STYLE === */
+/* === BOUTONS BULLES - PLUS TRANSPARENTS === */
 .controls-overlay {
   position: absolute; bottom: 12px; left: 0; right: 0;
-  display: flex; justify-content: space-between; padding: 0 12px; z-index: 15;
-  pointer-events: none;
+  display: flex; justify-content: space-between; padding: 0 12px; z-index: 15; pointer-events: none;
 }
 
-/* Groupe gauche (3 boutons) */
-.controls-left {
-  display: flex; gap: 8px; pointer-events: auto;
-}
-
-/* Groupe droit (2 boutons) */
-.controls-right {
-  display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: auto;
-}
+.controls-left, .controls-right { display: flex; gap: 8px; pointer-events: auto; }
+.controls-right { flex-direction: column; align-items: flex-end; }
 
 .controls-overlay button {
-  width: 58px; height: 58px; font-size: 1.7rem; border-radius: 50% !important; /* ROND COMME UNE BULLE */
-  background: rgba(15, 10, 30, 0.55);
-  color: #fff; border: 3px solid var(--neon-cyan);
-  box-shadow: 0 0 12px var(--neon-cyan), inset 0 0 8px rgba(255,255,255,0.15);
+  width: 56px; height: 56px; font-size: 1.65rem; border-radius: 50%;
+  background: rgba(15, 10, 30, 0.35);   /* PLUS TRANSPARENT */
+  color: #fff; border: 3px solid #00f9ff;
+  box-shadow: 0 0 12px #00f9ff, inset 0 0 6px rgba(255,255,255,0.1);
   cursor: pointer; transition: all 0.1s ease;
   display: flex; align-items: center; justify-content: center;
-  touch-action: manipulation;
-  backdrop-filter: blur(10px);
+  touch-action: manipulation; backdrop-filter: blur(12px);
 }
 
 .controls-overlay button:active {
-  background: rgba(0,249,255,0.35); transform: scale(0.88);
-  box-shadow: 0 0 22px var(--neon-cyan);
+  background: rgba(0,249,255,0.4); transform: scale(0.88);
+  box-shadow: 0 0 22px #00f9ff;
 }
 
 .controls-overlay button.rotate {
-  width: 64px; height: 64px; font-size: 1.9rem;
-  border-color: var(--neon-magenta); box-shadow: 0 0 14px var(--neon-magenta);
+  width: 62px; height: 62px; font-size: 1.85rem;
+  border-color: #ff00aa; box-shadow: 0 0 14px #ff00aa;
 }
 
 .controls-overlay button.hard-drop {
-  width: 52px; height: 52px; font-size: 1.5rem;
-  border-color: var(--neon-purple); box-shadow: 0 0 10px var(--neon-purple);
+  width: 50px; height: 50px; font-size: 1.45rem;
+  border-color: #9d4edd; box-shadow: 0 0 10px #9d4edd;
 }
 
-/* Overlays */
-.start-overlay, .game-over-overlay, .pause-overlay {
+/* === PAGE D'ACCUEIL (START SCREEN) - BEAUCOUP MIEUX === */
+.start-overlay {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(5,5,15,0.88); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 20;
-  border-radius: 8px;
+  background: rgba(8, 5, 18, 0.92);
+  display: none; flex-direction: column; justify-content: center; align-items: center;
+  z-index: 20; border-radius: 8px;
+  backdrop-filter: blur(6px);
 }
 
-.start-overlay.active, .game-over-overlay.active, .pause-overlay.active { display: flex; }
+.start-overlay.active { display: flex; }
 
-.overlay-content h2 { font-size: 1.9rem; margin-bottom: 10px; }
+.overlay-content {
+  text-align: center; padding: 20px;
+}
+
+.overlay-content h2 {
+  font-size: 2.1rem; font-weight: 900; letter-spacing: 3px;
+  background: linear-gradient(90deg, #00f9ff, #c084fc);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 20px #00f9ff;
+  margin-bottom: 12px;
+}
+
+.overlay-content p {
+  font-size: 1rem; color: #b0a0d0; margin-bottom: 28px;
+}
 
 .overlay-content button {
-  padding: 8px 26px; font-size: 0.95rem; border: 2px solid var(--neon-cyan); border-radius: 50px;
+  padding: 14px 48px; font-size: 1.15rem; font-weight: 600;
+  background: transparent; color: #00f9ff;
+  border: 3px solid #00f9ff; border-radius: 50px;
+  cursor: pointer; text-transform: uppercase; letter-spacing: 3px;
+  box-shadow: 0 0 20px #00f9ff;
+  transition: all 0.2s;
 }
+
+.overlay-content button:hover {
+  background: #00f9ff; color: #05050f; box-shadow: 0 0 35px #00f9ff;
+}
+
+.game-over-overlay, .pause-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(8, 5, 18, 0.9); display: none; flex-direction: column;
+  justify-content: center; align-items: center; z-index: 20; border-radius: 8px;
+}
+
+.game-over-overlay.active, .pause-overlay.active { display: flex; }
 
 .instructions { margin-top: 10px; font-size: 0.65rem; color: #555; text-align: center; }
 
-/* Mobile */
 @media (max-width: 480px) {
-  .controls-overlay button { width: 54px; height: 54px; font-size: 1.55rem; }
-  .controls-overlay button.rotate { width: 60px; height: 60px; font-size: 1.75rem; }
-  .controls-overlay button.hard-drop { width: 48px; height: 48px; }
+  .controls-overlay button { width: 52px; height: 52px; font-size: 1.5rem; }
+  .controls-overlay button.rotate { width: 58px; height: 58px; font-size: 1.7rem; }
+  .controls-overlay button.hard-drop { width: 46px; height: 46px; }
 }
