@@ -13,68 +13,68 @@
       <p class="subtitle">2084 • CYBERPUNK EDITION</p>
     </header>
 
+    <!-- Wrapper avec position relative pour overlay des boutons -->
     <div class="game-wrapper" style="position: relative;">
-      <!-- Canvas principal du jeu -->
+      <!-- Canvas principal -->
       <canvas id="board" width="320" height="640"></canvas>
 
-      <!-- Sidebar avec infos -->
-      <div class="sidebar">
-        <div class="panel">
-          <h3>SCORE</h3>
+      <!-- Infos flottantes en haut -->
+      <div class="floating-hud">
+        <div class="hud-item">
+          <div class="hud-label">SCORE</div>
           <div id="score">000000</div>
         </div>
-        <div class="panel">
-          <h3>NIVEAU</h3>
+        <div class="hud-item">
+          <div class="hud-label">NIVEAU</div>
           <div id="level">01</div>
         </div>
-        <div class="panel">
-          <h3> LIGNES</h3>
+        <div class="hud-item">
+          <div class="hud-label">LIGNES</div>
           <div id="lines">000</div>
         </div>
-        <div class="panel">
-          <h3>PIÈCE SUIVANTE</h3>
-          <canvas id="next-piece" width="120" height="120"></canvas>
+        <div class="hud-item next">
+          <div class="hud-label">SUIVANTE</div>
+          <canvas id="next-piece" width="90" height="90"></canvas>
         </div>
       </div>
 
-      <!-- Overlays -->
+      <!-- Boutons de contrôle transparents directement sur le jeu -->
+      <div class="controls-overlay">
+        <button id="btn-left" onclick="moveLeft()">⬅️</button>
+        <button id="btn-rotate" class="rotate" onclick="rotatePiece()">⟳</button>
+        <button id="btn-right" onclick="moveRight()">➡️</button>
+        <button id="btn-down" onclick="softDrop()">⬇️</button>
+        <button id="btn-hard" class="hard-drop" onclick="hardDrop()">⏬</button>
+      </div>
+
+      <!-- Overlays (start, pause, game over) -->
       <div id="start-overlay" class="start-overlay active">
         <div class="overlay-content">
-          <h2 style="color: #00f9ff; text-shadow: 0 0 20px #00f9ff;">BIENVENUE DANS LE FUTUR</h2>
+          <h2 style="color:#00f9ff; text-shadow:0 0 18px #00f9ff;">BIENVENUE DANS LE FUTUR</h2>
           <p>Prêt à empiler des blocs néon ?</p>
           <button onclick="startGame()">LANCER LE JEU</button>
-          <p style="margin-top: 30px; font-size: 0.85rem;">Utilise les flèches ou les boutons tactiles</p>
         </div>
       </div>
 
       <div id="pause-overlay" class="pause-overlay">
         <div class="overlay-content">
-          <h2 style="color: #ffea00;">PAUSE</h2>
+          <h2 style="color:#ffea00;">PAUSE</h2>
           <button onclick="togglePause()">REPRENDRE</button>
         </div>
       </div>
 
       <div id="game-over-overlay" class="game-over-overlay">
         <div class="overlay-content">
-          <h2 style="color: #ff2e63; text-shadow: 0 0 20px #ff2e63;">GAME OVER</h2>
+          <h2 style="color:#ff2e63; text-shadow:0 0 18px #ff2e63;">GAME OVER</h2>
           <p id="final-score">Score final : 000000</p>
           <button onclick="restartGame()">RECOMMENCER</button>
         </div>
       </div>
     </div>
 
-    <!-- Boutons de contrôle tactiles (optimisés iPhone) -->
-    <div class="controls">
-      <button id="btn-left" onclick="moveLeft()">⬅️</button>
-      <button id="btn-rotate" class="rotate" onclick="rotatePiece()">⟳</button>
-      <button id="btn-right" onclick="moveRight()">➡️</button>
-      <button id="btn-down" onclick="softDrop()">⬇️</button>
-      <button id="btn-hard" class="hard-drop" onclick="hardDrop()">⏬</button>
-    </div>
-
     <div class="instructions">
-      <strong>Clavier :</strong> Flèches / WASD • ↑ ou X = Tourner • Espace = Chute rapide • P = Pause • R = Restart<br>
-      <strong>Mobile :</strong> Appuie sur les gros boutons ci-dessus. Le jeu est fluide sur iPhone !
+      <strong>Clavier :</strong> Flèches / WASD • ↑ ou X = Tourner • Espace = Chute rapide • P = Pause<br>
+      <strong>Mobile :</strong> Swipe sur le plateau ou boutons transparents en bas. Gestes fluides sur iPhone !
     </div>
   </div>
 
