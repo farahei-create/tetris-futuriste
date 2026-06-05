@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE v3.1 - Permanent 3D Holographic Gameplay View === */
+/* === TETRIS NÉON FUTURISTE v3.2 - Pause Menu + Configurations === */
 
 let BLOCK_SIZE = 28;
 const COLS = 10;
@@ -38,6 +38,11 @@ let animationFrame = null;
 let glitchIntensity = 0;
 let isFullscreenMode = false;
 
+// Settings
+let soundEnabled = true;
+let alwaysShowControls = false;
+let view3DEnabled = true;
+
 let touchStartX = 0;
 let touchStartY = 0;
 let touchStartTime = 0;
@@ -56,6 +61,7 @@ const holdCtx = holdCanvas ? holdCanvas.getContext('2d', { alpha: true }) : null
 const startOverlay = document.getElementById('start-overlay');
 const pauseOverlay = document.getElementById('pause-overlay');
 const gameOverOverlay = document.getElementById('game-over-overlay');
+const settingsOverlay = document.getElementById('settings-overlay');
 
 const scoreEl = document.getElementById('score');
 const levelEl = document.getElementById('level');
@@ -79,6 +85,80 @@ function saveBestScore() {
   }
 }
 
+function loadSettings() {
+  const savedSound = localStorage.getItem('tetrisSoundEnabled');
+  if (savedSound !== null) soundEnabled = savedSound === 'true';
+
+  const savedControls = localStorage.getItem('tetrisAlwaysShowControls');
+  if (savedControls !== null) alwaysShowControls = savedControls === 'true';
+
+  const saved3D = localStorage.getItem('tetrisView3DEnabled');
+  if (saved3D !== null) view3DEnabled = saved3D === 'true';
+
+  // Apply initial settings
+  const soundToggle = document.getElementById('sound-toggle');
+  if (soundToggle) soundToggle.checked = soundEnabled;
+
+  const controlsToggle = document.getElementById('controls-always-show');
+  if (controlsToggle) controlsToggle.checked = alwaysShowControls;
+
+  const view3DToggle = document.getElementById('view-3d-toggle');
+  if (view3DToggle) view3DToggle.checked = view3DEnabled;
+
+  applySettings();
+}
+
+function saveSettings() {
+  localStorage.setItem('tetrisSoundEnabled', soundEnabled);
+  localStorage.setItem('tetrisAlwaysShowControls', alwaysShowControls);
+  localStorage.setItem('tetrisView3DEnabled', view3DEnabled);
+}
+
+function applySettings() {
+  const wrapper = document.querySelector('.game-wrapper');
+
+  // 3D View
+  if (view3DEnabled && isFullscreenMode) {
+    wrapper.classList.add('playing-3d');
+  } else {
+    wrapper.classList.remove('playing-3d');
+  }
+
+  // Controls visibility
+  if (alwaysShowControls && !paused && !gameOver) {
+    showControls();
+    clearTimeout(hideControlsTimer);
+  }
+}
+
+function showSettings() {
+  pauseOverlay.classList.remove('active');
+  settingsOverlay.classList.add('active');
+}
+
+function hideSettings() {
+  settingsOverlay.classList.remove('active');
+  pauseOverlay.classList.add('active');
+}
+
+function updateSetting(setting, value) {
+  if (setting === 'sound') {
+    soundEnabled = value;
+  } else if (setting === 'controls') {
+    alwaysShowControls = value;
+  } else if (setting === 'view3d') {
+    view3DEnabled = value;
+    const wrapper = document.querySelector('.game-wrapper');
+    if (value && isFullscreenMode) {
+      wrapper.classList.add('playing-3d');
+    } else {
+      wrapper.classList.remove('playing-3d');
+    }
+  }
+  saveSettings();
+  applySettings();
+}
+
 function showControls() {
   if (!controlsOverlay) return;
   clearTimeout(hideControlsTimer);
@@ -88,13 +168,14 @@ function showControls() {
 }
 
 function hideControls() {
-  if (!controlsOverlay) return;
+  if (!controlsOverlay || alwaysShowControls) return;
   controlsOverlay.style.transition = 'opacity 0.7s ease';
   controlsOverlay.style.opacity = '0.12';
   controlsOverlay.style.pointerEvents = 'none';
 }
 
 function scheduleHideControls() {
+  if (alwaysShowControls) return;
   clearTimeout(hideControlsTimer);
   hideControlsTimer = setTimeout(hideControls, 2400);
 }
@@ -608,8 +689,10 @@ function initAudio() {
 }
 
 function playSound(type) {
-  if (!audioCtx) initAudio();
-  if (!audioCtx) return;
+  if (!soundEnabled || !audioCtx) {
+    if (!audioCtx) initAudio();
+    if (!audioCtx || !soundEnabled) return;
+  }
   const now = audioCtx.currentTime;
 
   if (type === 'clear') {
@@ -812,8 +895,9 @@ function startGame() {
     scheduleHideControls();
     setTimeout(resizeGame, 80);
 
-    // === APPLY PERMANENT 3D HOLOGRAPHIC VIEW (like end of transition) ===
-    wrapper.classList.add('playing-3d');
+    if (view3DEnabled) {
+      wrapper.classList.add('playing-3d');
+    }
   };
   wrapper.addEventListener('transitionend', finalizeLaunch, { once: true });
 }
@@ -824,8 +908,10 @@ function togglePause() {
   if (paused) {
     cancelAnimationFrame(animationFrame);
     pauseOverlay.classList.add('active');
+    settingsOverlay.classList.remove('active');
   } else {
     pauseOverlay.classList.remove('active');
+    settingsOverlay.classList.remove('active');
     lastDropTime = performance.now();
     animationFrame = requestAnimationFrame(gameLoop);
     showControls();
@@ -846,6 +932,7 @@ function endGame() {
 function restartGame() {
   gameOverOverlay.classList.remove('active');
   pauseOverlay.classList.remove('active');
+  settingsOverlay.classList.remove('active');
   startOverlay.classList.remove('active');
   isFullscreenMode = false;
   const wrapper = document.querySelector('.game-wrapper');
@@ -859,6 +946,23 @@ function init() {
   initBoard();
   resizeGame();
   loadBestScore();
+  loadSettings();
+
+  // Wire up settings toggles
+  const soundToggle = document.getElementById('sound-toggle');
+  if (soundToggle) {
+    soundToggle.addEventListener('change', (e) => updateSetting('sound', e.target.checked));
+  }
+
+  const controlsToggle = document.getElementById('controls-always-show');
+  if (controlsToggle) {
+    controlsToggle.addEventListener('change', (e) => updateSetting('controls', e.target.checked));
+  }
+
+  const view3DToggle = document.getElementById('view-3d-toggle');
+  if (view3DToggle) {
+    view3DToggle.addEventListener('change', (e) => updateSetting('view3d', e.target.checked));
+  }
 
   if (controlsOverlay) {
     controlsOverlay.style.opacity = '0.12';
@@ -889,7 +993,7 @@ function init() {
     if (!gameOver && !paused && controlsOverlay) hideControls();
   }, 1900);
 
-  console.log('%c[Tetris Neon v3.1] Permanent 3D Holographic Gameplay View activé !', 'color:#00f9ff');
+  console.log('%c[Tetris Neon v3.2] Pause Menu + Configurations activés !', 'color:#00f9ff');
 }
 
 init();

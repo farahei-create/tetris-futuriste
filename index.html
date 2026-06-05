@@ -66,8 +66,12 @@
 
       <div id="pause-overlay" class="pause-overlay">
         <div class="overlay-content">
-          <h2>PAUSE</h2>
-          <button onclick="togglePause()">REPRENDRE</button>
+          <h2 onclick="togglePause()" style="cursor: pointer; user-select: none;">PAUSE</h2>
+          <div class="pause-buttons">
+            <button onclick="togglePause()">REPRENDRE</button>
+            <button onclick="showSettings()">CONFIGURATIONS</button>
+            <button onclick="restartGame()">RECOMMENCER</button>
+          </div>
         </div>
       </div>
 
@@ -76,6 +80,25 @@
           <h2>GAME OVER</h2>
           <p id="final-score">Score final : 000000</p>
           <button onclick="restartGame()">RECOMMENCER</button>
+        </div>
+      </div>
+
+      <!-- Settings / Configurations Menu -->
+      <div id="settings-overlay" class="settings-overlay">
+        <div class="overlay-content">
+          <h2>CONFIGURATIONS</h2>
+          <div class="settings-list">
+            <label>
+              <input type="checkbox" id="sound-toggle" checked> Son activé
+            </label>
+            <label>
+              <input type="checkbox" id="controls-always-show"> Toujours afficher les contrôles
+            </label>
+            <label>
+              <input type="checkbox" id="view-3d-toggle" checked> Vue 3D holographique
+            </label>
+          </div>
+          <button onclick="hideSettings()">RETOUR</button>
         </div>
       </div>
     </div>
