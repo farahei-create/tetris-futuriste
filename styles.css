@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE - Ultimate 3D Welcome + Clickable Explosions + Glitch Transition === */
+/* === TETRIS NÉON FUTURISTE - Big 3D Tetrominoes Coming Toward You === */
 
 body {
   background: #020208;
@@ -286,13 +286,17 @@ h1:hover {
   to { background-position: 55px 55px; }
 }
 
-/* CLEAR TETRIS SHAPES IN 3D PERSPECTIVE */
+/* BIG 3D TETROMINOES COMING TOWARD YOU */
 .start-overlay.active .tetromino {
   position: absolute;
-  width: 42px;
-  height: 42px;
-  transform-style: preserve-3d;
-  animation: float3DTowardCamera 5.5s ease-in-out infinite;
+  width: 48px;
+  height: 48px;
+  border: 4px solid #00f9ff;
+  box-shadow: 
+    0 0 25px #00f9ff,
+    0 0 50px rgba(0, 249, 255, 0.9),
+    inset 0 0 12px rgba(255,255,255,0.5);
+  animation: bigFloatTowardCamera 5s ease-in-out infinite;
   z-index: 2;
   pointer-events: auto;
   cursor: pointer;
@@ -300,175 +304,117 @@ h1:hover {
 }
 
 .start-overlay.active .tetromino:hover {
-  filter: brightness(1.4) saturate(1.3);
+  filter: brightness(1.5);
 }
 
 .start-overlay.active .tetromino:active {
-  transform: scale(0.9);
+  transform: scale(0.85);
 }
 
-/* Individual block style for clear Tetris shapes */
-.start-overlay.active .tetromino .block {
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border: 2px solid #fff;
-  box-shadow: 
-    0 0 8px currentColor,
-    inset 0 0 6px rgba(255,255,255,0.6);
-  background: currentColor;
-  transition: all 0.1s;
-}
+/* Different shapes and colors */
+.start-overlay.active .tetromino:nth-child(1) { top: 15%; left: 12%; border-color: #00f9ff; width: 48px; height: 48px; }
+.start-overlay.active .tetromino:nth-child(2) { top: 22%; right: 10%; border-color: #ff00aa; width: 36px; height: 72px; }
+.start-overlay.active .tetromino:nth-child(3) { bottom: 20%; left: 15%; border-color: #c084fc; width: 72px; height: 36px; }
+.start-overlay.active .tetromino:nth-child(4) { bottom: 14%; right: 14%; border-color: #00f9ff; width: 48px; height: 48px; }
+.start-overlay.active .tetromino:nth-child(5) { top: 38%; left: 8%; border-color: #ff00aa; width: 36px; height: 72px; }
+.start-overlay.active .tetromino:nth-child(6) { top: 55%; right: 12%; border-color: #c084fc; width: 72px; height: 36px; }
 
-/* Different Tetris shapes positioned */
-.start-overlay.active .tetromino.i-shape { width: 18px; height: 72px; }
-.start-overlay.active .tetromino.i-shape .block { width: 18px; height: 18px; }
-.start-overlay.active .tetromino.i-shape .block:nth-child(1) { top: 0; }
-.start-overlay.active .tetromino.i-shape .block:nth-child(2) { top: 18px; }
-.start-overlay.active .tetromino.i-shape .block:nth-child(3) { top: 36px; }
-.start-overlay.active .tetromino.i-shape .block:nth-child(4) { top: 54px; }
-
-.start-overlay.active .tetromino.t-shape { width: 54px; height: 36px; }
-.start-overlay.active .tetromino.t-shape .block:nth-child(1) { left: 18px; top: 0; }
-.start-overlay.active .tetromino.t-shape .block:nth-child(2) { left: 0; top: 18px; }
-.start-overlay.active .tetromino.t-shape .block:nth-child(3) { left: 18px; top: 18px; }
-.start-overlay.active .tetromino.t-shape .block:nth-child(4) { left: 36px; top: 18px; }
-
-.start-overlay.active .tetromino.l-shape { width: 36px; height: 54px; }
-.start-overlay.active .tetromino.l-shape .block:nth-child(1) { left: 0; top: 0; }
-.start-overlay.active .tetromino.l-shape .block:nth-child(2) { left: 0; top: 18px; }
-.start-overlay.active .tetromino.l-shape .block:nth-child(3) { left: 0; top: 36px; }
-.start-overlay.active .tetromino.l-shape .block:nth-child(4) { left: 18px; top: 36px; }
-
-.start-overlay.active .tetromino.j-shape { width: 36px; height: 54px; }
-.start-overlay.active .tetromino.j-shape .block:nth-child(1) { left: 18px; top: 0; }
-.start-overlay.active .tetromino.j-shape .block:nth-child(2) { left: 18px; top: 18px; }
-.start-overlay.active .tetromino.j-shape .block:nth-child(3) { left: 18px; top: 36px; }
-.start-overlay.active .tetromino.j-shape .block:nth-child(4) { left: 0; top: 36px; }
-
-.start-overlay.active .tetromino.o-shape { width: 36px; height: 36px; }
-.start-overlay.active .tetromino.o-shape .block:nth-child(1) { left: 0; top: 0; }
-.start-overlay.active .tetromino.o-shape .block:nth-child(2) { left: 18px; top: 0; }
-.start-overlay.active .tetromino.o-shape .block:nth-child(3) { left: 0; top: 18px; }
-.start-overlay.active .tetromino.o-shape .block:nth-child(4) { left: 18px; top: 18px; }
-
-.start-overlay.active .tetromino.s-shape { width: 54px; height: 36px; }
-.start-overlay.active .tetromino.s-shape .block:nth-child(1) { left: 18px; top: 0; }
-.start-overlay.active .tetromino.s-shape .block:nth-child(2) { left: 36px; top: 0; }
-.start-overlay.active .tetromino.s-shape .block:nth-child(3) { left: 0; top: 18px; }
-.start-overlay.active .tetromino.s-shape .block:nth-child(4) { left: 18px; top: 18px; }
-
-.start-overlay.active .tetromino.z-shape { width: 54px; height: 36px; }
-.start-overlay.active .tetromino.z-shape .block:nth-child(1) { left: 0; top: 0; }
-.start-overlay.active .tetromino.z-shape .block:nth-child(2) { left: 18px; top: 0; }
-.start-overlay.active .tetromino.z-shape .block:nth-child(3) { left: 18px; top: 18px; }
-.start-overlay.active .tetromino.z-shape .block:nth-child(4) { left: 36px; top: 18px; }
-
-/* 3D Floating toward camera */
-.start-overlay.active .tetromino {
-  animation: float3DTowardCamera 5.5s ease-in-out infinite;
-}
-
-@keyframes float3DTowardCamera {
+/* Strong 3D coming toward camera */
+@keyframes bigFloatTowardCamera {
   0% {
-    transform: translateZ(-380px) scale(0.35) rotateX(32deg) rotateY(18deg);
-    opacity: 0.35;
+    transform: translateZ(-450px) scale(0.25) rotateX(35deg) rotateY(20deg);
+    opacity: 0.3;
   }
-  45% {
-    transform: translateZ(120px) scale(1.25) rotateX(-6deg) rotateY(-15deg);
+  40% {
+    transform: translateZ(150px) scale(1.4) rotateX(-8deg) rotateY(-18deg);
     opacity: 1;
   }
   100% {
-    transform: translateZ(-380px) scale(0.35) rotateX(32deg) rotateY(18deg);
-    opacity: 0.35;
+    transform: translateZ(-450px) scale(0.25) rotateX(35deg) rotateY(20deg);
+    opacity: 0.3;
   }
 }
 
-/* Click to explode individual tetromino */
+/* Click to explode */
 .start-overlay.active .tetromino.exploding {
-  animation: individualExplode 0.6s ease-out forwards;
+  animation: bigIndividualExplode 0.55s ease-out forwards;
   pointer-events: none;
 }
 
-@keyframes individualExplode {
-  0% { transform: translateZ(120px) scale(1.25); opacity: 1; }
-  30% { transform: translateZ(450px) scale(2.2); }
-  100% { transform: translateZ(900px) scale(3.5); opacity: 0; }
+@keyframes bigIndividualExplode {
+  0% { transform: translateZ(150px) scale(1.4); opacity: 1; }
+  35% { transform: translateZ(550px) scale(2.8); }
+  100% { transform: translateZ(1100px) scale(5); opacity: 0; }
 }
 
-/* MASSIVE RUSH + SPECTACULAR EXPLOSION when clicking LANCER LE JEU */
+/* MASSIVE RUSH + EXPLOSION on LANCER LE JEU */
 .start-overlay.rushing .tetromino {
-  animation: massiveRushExplode 0.85s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  animation: massiveBigRush 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }
 
-@keyframes massiveRushExplode {
+@keyframes massiveBigRush {
   0% {
-    transform: translateZ(120px) scale(1.25) rotateX(-6deg) rotateY(-15deg);
+    transform: translateZ(150px) scale(1.4) rotateX(-8deg) rotateY(-18deg);
     opacity: 1;
   }
-  35% {
-    transform: translateZ(750px) scale(3.8) rotateX(0deg) rotateY(0deg);
+  30% {
+    transform: translateZ(850px) scale(4.5);
     opacity: 1;
   }
   55% {
-    transform: translateZ(1100px) scale(5);
-    opacity: 0.6;
+    transform: translateZ(1300px) scale(6.5);
+    opacity: 0.5;
   }
   100% {
-    transform: translateZ(1600px) scale(7);
+    transform: translateZ(1800px) scale(9);
     opacity: 0;
   }
 }
 
-/* Epic explosion flash */
 .start-overlay.rushing::after {
   content: '';
   position: absolute;
-  inset: -30%;
-  background: radial-gradient(circle, rgba(255,255,255,0.95) 5%, rgba(0,249,255,0.7) 25%, transparent 70%);
-  animation: epicFlash 0.7s ease-out forwards;
+  inset: -40%;
+  background: radial-gradient(circle, rgba(255,255,255,0.95) 8%, rgba(0,249,255,0.8) 30%, transparent 75%);
+  animation: bigEpicFlash 0.65s ease-out forwards;
   z-index: 4;
-  pointer-events: none;
 }
 
-@keyframes epicFlash {
-  0% { opacity: 0.95; transform: scale(0.4); }
-  40% { opacity: 1; }
-  100% { opacity: 0; transform: scale(3); }
+@keyframes bigEpicFlash {
+  0% { opacity: 0.95; transform: scale(0.3); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: scale(3.5); }
 }
 
-/* Particle burst */
 .start-overlay.rushing::before {
   content: '';
   position: absolute;
-  inset: -20%;
+  inset: -25%;
   background-image: 
-    radial-gradient(circle, #fff 2px, transparent 4px),
-    radial-gradient(circle, #00f9ff 2px, transparent 4px),
-    radial-gradient(circle, #ff00aa 2px, transparent 4px);
-  background-size: 80px 80px, 110px 110px, 140px 140px;
-  animation: particleBurst 0.9s ease-out forwards;
+    radial-gradient(circle, #fff 2.5px, transparent 5px),
+    radial-gradient(circle, #00f9ff 2.5px, transparent 5px),
+    radial-gradient(circle, #ff00aa 2.5px, transparent 5px);
+  background-size: 70px 70px, 100px 100px, 130px 130px;
+  animation: bigParticleBurst 0.85s ease-out forwards;
   z-index: 5;
-  pointer-events: none;
 }
 
-@keyframes particleBurst {
+@keyframes bigParticleBurst {
   0% { opacity: 1; }
   100% { opacity: 0; }
 }
 
-/* GLITCH TRANSITION when game starts */
+/* GLITCH TRANSITION */
 .start-overlay.glitching {
-  animation: glitchTransition 0.4s steps(4) forwards;
+  animation: glitchTransition 0.35s steps(3) forwards;
 }
 
 @keyframes glitchTransition {
-  0% { opacity: 1; transform: translate(0); }
-  20% { opacity: 0.3; transform: translate(-4px, 3px); }
-  40% { opacity: 0.8; transform: translate(5px, -2px); }
-  60% { opacity: 0.2; transform: translate(-3px, 4px); }
-  80% { opacity: 0.9; transform: translate(2px, -3px); }
-  100% { opacity: 0; transform: translate(0); }
+  0% { opacity: 1; }
+  25% { opacity: 0.4; transform: translate(-3px, 2px); }
+  50% { opacity: 0.85; transform: translate(4px, -3px); }
+  75% { opacity: 0.3; transform: translate(-2px, 3px); }
+  100% { opacity: 0; }
 }
 
 .overlay-content {
@@ -651,13 +597,8 @@ h1:hover {
     max-width: 320px;
     padding: 0 14px;
   }
-  .instructions {
-    font-size: 0.7rem;
-    margin-top: 8px;
-  }
 }
 
-/* 3D Launch effects */
 .game-wrapper.launching {
   position: fixed !important;
   top: 0;
