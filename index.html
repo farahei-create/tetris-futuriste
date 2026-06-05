@@ -107,21 +107,13 @@
   <script src="script.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
-    // ==================== ADVANCED WEB AUDIO API ====================
     const Audio = {
       ctx: null,
       enabled: true,
-
-      init() {
-        if (!this.ctx) {
-          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-      },
-
+      init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
       play(type, options = {}) {
         if (!this.enabled) return;
         this.init();
-
         switch(type) {
           case 'move': this._playMove(); break;
           case 'rotate': this._playRotate(); break;
@@ -132,157 +124,65 @@
           case 'hold': this._playHold(); break;
         }
       },
-
       _playMove() {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        const filter = this.ctx.createBiquadFilter();
-
-        osc.type = 'sawtooth';
-        osc.frequency.value = 180;
-        filter.type = 'lowpass';
-        filter.frequency.value = 800;
-        gain.gain.value = 0.25;
-        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        setTimeout(() => osc.stop(), 150);
+        const o = this.ctx.createOscillator(), g = this.ctx.createGain(), f = this.ctx.createBiquadFilter();
+        o.type = 'sawtooth'; o.frequency.value = 180; f.type = 'lowpass'; f.frequency.value = 800;
+        g.gain.value = 0.25; g.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+        o.connect(f); f.connect(g); g.connect(this.ctx.destination); o.start(); setTimeout(() => o.stop(), 150);
       },
-
       _playRotate() {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.value = 620;
-        gain.gain.value = 0.3;
-        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        setTimeout(() => osc.stop(), 200);
+        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+        o.type = 'triangle'; o.frequency.value = 620; g.gain.value = 0.3; g.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
+        o.connect(g); g.connect(this.ctx.destination); o.start(); setTimeout(() => o.stop(), 200);
       },
-
       _playLock() {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        const noise = this.ctx.createBufferSource();
-        const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.15, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-        noise.buffer = buffer;
-
-        osc.type = 'sawtooth';
-        osc.frequency.value = 90;
-        const noiseGain = this.ctx.createGain();
-        noiseGain.gain.value = 0.4;
-        noiseGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
-        gain.gain.value = 0.35;
-        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
-
-        osc.connect(gain);
-        noise.connect(noiseGain);
-        gain.connect(this.ctx.destination);
-        noiseGain.connect(this.ctx.destination);
-        osc.start();
-        noise.start();
-        setTimeout(() => { osc.stop(); noise.stop(); }, 300);
+        const o = this.ctx.createOscillator(), g = this.ctx.createGain(), n = this.ctx.createBufferSource();
+        const b = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.15, this.ctx.sampleRate);
+        const d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        n.buffer = b; o.type = 'sawtooth'; o.frequency.value = 90;
+        const ng = this.ctx.createGain(); ng.gain.value = 0.4; ng.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+        g.gain.value = 0.35; g.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+        o.connect(g); n.connect(ng); g.connect(this.ctx.destination); ng.connect(this.ctx.destination);
+        o.start(); n.start(); setTimeout(() => { o.stop(); n.stop(); }, 300);
       },
-
       _playLineClear(lines = 1) {
-        const baseFreq = lines >= 4 ? 520 : 380;
-        const duration = lines >= 4 ? 0.6 : 0.35;
-
+        const base = lines >= 4 ? 520 : 380; const dur = lines >= 4 ? 0.6 : 0.35;
         for (let i = 0; i < (lines >= 4 ? 3 : 2); i++) {
           setTimeout(() => {
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            const filter = this.ctx.createBiquadFilter();
-            osc.type = 'sawtooth';
-            osc.frequency.value = baseFreq + (i * 80);
-            filter.type = 'lowpass';
-            filter.frequency.value = 1200;
-            gain.gain.value = 0.4;
-            gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(this.ctx.destination);
-            osc.start();
-            setTimeout(() => osc.stop(), duration * 1000 + 50);
+            const o = this.ctx.createOscillator(), g = this.ctx.createGain(), f = this.ctx.createBiquadFilter();
+            o.type = 'sawtooth'; o.frequency.value = base + (i * 80); f.type = 'lowpass'; f.frequency.value = 1200;
+            g.gain.value = 0.4; g.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+            o.connect(f); f.connect(g); g.connect(this.ctx.destination); o.start(); setTimeout(() => o.stop(), dur * 1000 + 50);
           }, i * 60);
         }
       },
-
       _playExplosion() {
-        const noise = this.ctx.createBufferSource();
-        const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.8, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-        noise.buffer = buffer;
-
-        const noiseFilter = this.ctx.createBiquadFilter();
-        noiseFilter.type = 'lowpass';
-        noiseFilter.frequency.value = 800;
-        const noiseGain = this.ctx.createGain();
-        noiseGain.gain.value = 0.7;
-        noiseGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.9);
-
-        const osc = this.ctx.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.value = 55;
-        const oscGain = this.ctx.createGain();
-        oscGain.gain.value = 0.6;
-        oscGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.7);
-
-        noise.connect(noiseFilter);
-        noiseFilter.connect(noiseGain);
-        osc.connect(oscGain);
-        noiseGain.connect(this.ctx.destination);
-        oscGain.connect(this.ctx.destination);
-
-        noise.start();
-        osc.start();
-        setTimeout(() => { noise.stop(); osc.stop(); }, 950);
+        const n = this.ctx.createBufferSource();
+        const b = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.8, this.ctx.sampleRate);
+        const d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        n.buffer = b;
+        const nf = this.ctx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.value = 800;
+        const ng = this.ctx.createGain(); ng.gain.value = 0.7; ng.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.9);
+        const o = this.ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 55;
+        const og = this.ctx.createGain(); og.gain.value = 0.6; og.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.7);
+        n.connect(nf); nf.connect(ng); o.connect(og); ng.connect(this.ctx.destination); og.connect(this.ctx.destination);
+        n.start(); o.start(); setTimeout(() => { n.stop(); o.stop(); }, 950);
       },
-
       _playGameOver() {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.value = 120;
-        gain.gain.value = 0.5;
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        setTimeout(() => {
-          osc.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 1.2);
-          gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 1.5);
-          setTimeout(() => osc.stop(), 1600);
-        }, 200);
+        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+        o.type = 'sawtooth'; o.frequency.value = 120; g.gain.value = 0.5;
+        o.connect(g); g.connect(this.ctx.destination); o.start();
+        setTimeout(() => { o.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 1.2); g.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 1.5); setTimeout(() => o.stop(), 1600); }, 200);
       },
-
       _playHold() {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = 440;
-        gain.gain.value = 0.3;
-        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        setTimeout(() => osc.stop(), 300);
+        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+        o.type = 'sine'; o.frequency.value = 440; g.gain.value = 0.3; g.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+        o.connect(g); g.connect(this.ctx.destination); o.start(); setTimeout(() => o.stop(), 300);
       }
     };
+    window.playSound = (t, o) => Audio.play(t, o);
 
-    window.playSound = (type, options) => Audio.play(type, options);
-
-    // ==================== THREE.JS ====================
-    let scene, camera, renderer;
-    let tetrominoMeshes = [];
-    let isThreeActive = true;
+    let scene, camera, renderer, tetrominoMeshes = [], isThreeActive = true;
 
     function initThreeJS() {
       const container = document.getElementById('three-container');
@@ -297,42 +197,32 @@
       camera = new THREE.PerspectiveCamera(55, container.clientWidth / container.clientHeight, 0.1, 2000);
       camera.position.set(0, 0, 420);
 
-      const ambient = new THREE.AmbientLight(0x112233, 0.6);
-      scene.add(ambient);
-
-      const pointLight = new THREE.PointLight(0x00f9ff, 1.2, 800);
-      pointLight.position.set(0, 80, 300);
-      scene.add(pointLight);
-
-      const pinkLight = new THREE.PointLight(0xff00aa, 0.9, 700);
-      pinkLight.position.set(0, -60, 280);
-      scene.add(pinkLight);
+      scene.add(new THREE.AmbientLight(0x112233, 0.6));
+      const pl = new THREE.PointLight(0x00f9ff, 1.2, 800); pl.position.set(0, 80, 300); scene.add(pl);
+      const pink = new THREE.PointLight(0xff00aa, 0.9, 700); pink.position.set(0, -60, 280); scene.add(pink);
 
       window.addEventListener('resize', () => {
-        if (!container || !renderer || !camera) return;
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
+        if (renderer && camera) {
+          renderer.setSize(container.clientWidth, container.clientHeight);
+          camera.aspect = container.clientWidth / container.clientHeight;
+          camera.updateProjectionMatrix();
+        }
       });
 
       animate();
 
-      // Spawn 11 tetrominoes - NO CHECK on overlay class (more reliable)
-      setTimeout(() => {
-        for (let i = 0; i < 11; i++) {
-          setTimeout(() => {
-            const types = ['I','T','L','J','O','S','Z'];
-            const colors = [0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff];
-            const type = types[Math.floor(Math.random() * types.length)];
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            const x = (Math.random() - 0.5) * 380;
-            const y = (Math.random() - 0.5) * 280 - 10;
-            const z = -400 - Math.random() * 140;
+      // Spawn immediately and unconditionally
+      const types = ['I','T','L','J','O','S','Z'];
+      const colors = [0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff];
 
-            create3DTetromino(type, color, x, y, z);
-          }, i * 220);
-        }
-      }, 180);
+      for (let i = 0; i < 11; i++) {
+        const type = types[Math.floor(Math.random() * types.length)];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const x = (Math.random() - 0.5) * 380;
+        const y = (Math.random() - 0.5) * 280 - 10;
+        const z = -400 - Math.random() * 140;
+        create3DTetromino(type, color, x, y, z);
+      }
     }
 
     function create3DTetromino(type, color, x, y, z) {
@@ -378,23 +268,22 @@
 
     document.addEventListener('click', (e) => {
       if (!isThreeActive || !renderer) return;
-      const threeContainer = document.getElementById('three-container');
-      if (!threeContainer) return;
-      const rect = threeContainer.getBoundingClientRect();
-      if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
+      const c = document.getElementById('three-container');
+      if (!c) return;
+      const r = c.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
 
-      const mouse = new THREE.Vector2();
-      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      const m = new THREE.Vector2();
+      m.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+      m.y = -((e.clientY - r.top) / r.height) * 2 + 1;
 
       const ray = new THREE.Raycaster();
-      ray.setFromCamera(mouse, camera);
+      ray.setFromCamera(m, camera);
 
       for (let i = tetrominoMeshes.length - 1; i >= 0; i--) {
         const obj = tetrominoMeshes[i];
         if (!obj || !obj.parent || obj.userData?.exploded) continue;
-        const hits = ray.intersectObjects(obj.children, true);
-        if (hits.length > 0) {
+        if (ray.intersectObjects(obj.children, true).length > 0) {
           explodeTetromino(obj);
           break;
         }
@@ -412,18 +301,10 @@
       if (idx > -1) tetrominoMeshes.splice(idx, 1);
 
       const mat = new THREE.MeshPhongMaterial({ color: group.children[0].material.color });
-
       for (let i = 0; i < 15; i++) {
-        const p = new THREE.Mesh(
-          new THREE.BoxGeometry(6 + Math.random()*6, 6 + Math.random()*6, 6 + Math.random()*6),
-          mat
-        );
+        const p = new THREE.Mesh(new THREE.BoxGeometry(6 + Math.random()*6, 6 + Math.random()*6, 6 + Math.random()*6), mat);
         p.position.copy(pos);
-        p.userData.velocity = new THREE.Vector3(
-          (Math.random()-0.5)*5.8,
-          (Math.random()-0.5)*5.8 + 2.6,
-          (Math.random()-0.5)*4.8
-        );
+        p.userData.velocity = new THREE.Vector3((Math.random()-0.5)*5.8, (Math.random()-0.5)*5.8 + 2.6, (Math.random()-0.5)*4.8);
         p.userData.life = 80 + Math.random()*35;
         scene.add(p);
         tetrominoMeshes.push(p);
@@ -444,11 +325,7 @@
         if (!obj || !obj.parent) return;
 
         if (obj.userData.rotSpeedY) obj.rotation.y += obj.userData.rotSpeedY * 0.015;
-
-        if (obj.userData.floatSpeed) {
-          obj.position.y += Math.sin(Date.now() * 0.0015 + i) * 0.09;
-        }
-
+        if (obj.userData.floatSpeed) obj.position.y += Math.sin(Date.now() * 0.0015 + i) * 0.09;
         if (obj.position.z < 115) obj.position.z += 2.3;
 
         // Repulsion
@@ -458,7 +335,6 @@
           const dy = obj.position.y - other.position.y;
           const dz = obj.position.z - other.position.z;
           const distSq = dx*dx + dy*dy + dz*dz;
-
           if (distSq > 0.1 && distSq < 4200) {
             const dist = Math.sqrt(distSq);
             const force = (65 - dist) * 0.028;
@@ -472,7 +348,6 @@
           obj.position.add(obj.userData.velocity);
           obj.userData.velocity.y -= 0.11;
           obj.userData.life--;
-
           if (obj.userData.life <= 0) {
             scene.remove(obj);
             const idx = tetrominoMeshes.indexOf(obj);
@@ -494,16 +369,9 @@
         if (obj && obj.parent && !obj.userData.exploded) {
           const color = obj.children?.[0]?.material?.color?.getHex() || 0x00f9ff;
           for (let k = 0; k < 12; k++) {
-            const p = new THREE.Mesh(
-              new THREE.BoxGeometry(5 + Math.random()*6, 5 + Math.random()*6, 5 + Math.random()*6),
-              new THREE.MeshPhongMaterial({ color })
-            );
+            const p = new THREE.Mesh(new THREE.BoxGeometry(5 + Math.random()*6, 5 + Math.random()*6, 5 + Math.random()*6), new THREE.MeshPhongMaterial({ color }));
             p.position.copy(obj.position);
-            p.userData.velocity = new THREE.Vector3(
-              (Math.random()-0.5)*5.8,
-              (Math.random()-0.5)*5.8 + 2.8,
-              (Math.random()-0.5)*4.8
-            );
+            p.userData.velocity = new THREE.Vector3((Math.random()-0.5)*5.8, (Math.random()-0.5)*5.8 + 2.8, (Math.random()-0.5)*4.8);
             p.userData.life = 70 + Math.random()*35;
             scene.add(p);
             tetrominoMeshes.push(p);
@@ -522,18 +390,13 @@
 
       setTimeout(() => {
         overlay.classList.remove('active');
-
-        if (renderer) {
-          renderer.dispose();
-          if (threeContainer) threeContainer.innerHTML = '';
-        }
-
+        if (renderer) { renderer.dispose(); if (threeContainer) threeContainer.innerHTML = ''; }
         startGame();
       }, 650);
     }
 
     window.onload = function() {
-      setTimeout(() => { initThreeJS(); }, 80);
+      setTimeout(() => { initThreeJS(); }, 60);
     };
   </script>
 </body>
