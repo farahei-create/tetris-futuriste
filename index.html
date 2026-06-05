@@ -5,6 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>TETRIS NÉON // 2084</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    #three-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: auto;
+      transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .overlay-content {
+      z-index: 10;
+      position: relative;
+    }
+    .start-overlay.rushing #three-container {
+      opacity: 0;
+      transform: scale(1.15);
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -51,8 +71,10 @@
         </div>
       </div>
 
+      <!-- WELCOME SCREEN WITH THREE.JS -->
       <div id="start-overlay" class="start-overlay active">
         <div id="three-container"></div>
+
         <div class="overlay-content">
           <h2>BIENVENUE DANS LE FUTUR</h2>
           <p>Prêt à empiler des blocs néon ?</p>
@@ -105,6 +127,7 @@
   </div>
 
   <script src="script.js"></script>
+  <!-- Three.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
     let scene, camera, renderer;
@@ -168,43 +191,51 @@
       const group = new THREE.Group();
       group.userData = { type, exploded: false };
 
-      const material = new THREE.MeshPhongMaterial({ color, shininess: 40 });
+      const material = new THREE.MeshPhongMaterial({
+        color: color,
+        shininess: 35,
+        specular: 0x222222
+      });
+
       const blockSize = 22;
       const gap = 1.5;
 
       const shapes = {
-        'I': [[0,0,0],[0,1,0],[0,2,0],[0,3,0]],
-        'T': [[-1,0,0],[0,0,0],[1,0,0],[0,1,0]],
-        'L': [[0,0,0],[0,1,0],[0,2,0],[1,2,0]],
-        'J': [[1,0,0],[1,1,0],[1,2,0],[-1,2,0]],
-        'O': [[0,0,0],[1,0,0],[0,1,0],[1,1,0]],
-        'S': [[1,0,0],[2,0,0],[-1,1,0],[0,1,0]],
-        'Z': [[0,0,0],[-1,0,0],[0,1,0],[1,1,0]]
+        'I': [[0,0,0], [0,1,0], [0,2,0], [0,3,0]],
+        'T': [[1,0,0], [-1,0,0], [1,0,0], [0,1,0]],
+        'L': [[0,0,0], [0,1,0], [0,2,0], [1,2,0]],
+        'J': [[1,0,0], [1,1,0], [1,2,0], [-1,2,0]],
+        'O': [[0,0,0], [1,0,0], [0,1,0], [1,1,0]],
+        'S': [[1,0,0], [2,0,0], [-1,1,0], [0,1,0]],
+        'Z': [[0,0,0], [-1,0,0], [0,1,0], [1,1,0]]
       };
 
       const layout = shapes[type] || shapes['O'];
+
       layout.forEach(([ox, oy, oz]) => {
-        const geo = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-        const mesh = new THREE.Mesh(geo, material);
+        const geometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+        const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(ox * (blockSize + gap), oy * (blockSize + gap), oz * (blockSize + gap));
         group.add(mesh);
       });
 
       group.position.set(x, y, z);
       group.rotation.set(
-        (Math.random()-0.5)*0.7,
-        Math.random()*Math.PI*2,
-        (Math.random()-0.5)*0.7
+        (Math.random() - 0.5) * 0.6,
+        Math.random() * Math.PI * 2,
+        (Math.random() - 0.5) * 0.6
       );
 
-      group.userData.rotSpeedY = 0.4 + Math.random()*0.85;
-      group.userData.floatSpeed = 0.8 + Math.random()*0.6;
+      group.userData.floatSpeed = 0.8 + Math.random() * 0.6;
+      group.userData.rotSpeed = 0.4 + Math.random() * 0.8;
 
       scene.add(group);
       tetrominoMeshes.push(group);
+
       return group;
     }
 
+    // Global click handler for explosion
     document.addEventListener('click', (e) => {
       if (!isThreeActive || !renderer) return;
 
@@ -236,27 +267,37 @@
     function explodeTetromino(group) {
       if (group.userData.exploded) return;
       group.userData.exploded = true;
+
       playExplosionSound();
 
-      const pos = group.position.clone();
+      const worldPos = new THREE.Vector3();
+      group.getWorldPosition(worldPos);
+
       scene.remove(group);
-      const idx = tetrominoMeshes.indexOf(group);
-      if (idx > -1) tetrominoMeshes.splice(idx, 1);
+      const index = tetrominoMeshes.indexOf(group);
+      if (index > -1) tetrominoMeshes.splice(index, 1);
 
-      const mat = new THREE.MeshPhongMaterial({ color: group.children[0].material.color });
+      const particleMat = new THREE.MeshPhongMaterial({
+        color: group.children[0].material.color,
+        shininess: 20
+      });
 
-      for (let i = 0; i < 15; i++) {
-        const p = new THREE.Mesh(
-          new THREE.BoxGeometry(6 + Math.random()*6, 6 + Math.random()*6, 6 + Math.random()*6),
-          mat
-        );
-        p.position.copy(pos);
+      for (let i = 0; i < 14; i++) {
+        const size = 6 + Math.random() * 7;
+        const geo = new THREE.BoxGeometry(size, size, size);
+        const p = new THREE.Mesh(geo, particleMat);
+
+        p.position.copy(worldPos);
+        p.position.x += (Math.random() - 0.5) * 30;
+        p.position.y += (Math.random() - 0.5) * 30;
+
         p.userData.velocity = new THREE.Vector3(
-          (Math.random()-0.5)*5.8,
-          (Math.random()-0.5)*5.8 + 2.6,
-          (Math.random()-0.5)*4.8
+          (Math.random() - 0.5) * 4.8,
+          (Math.random() - 0.5) * 4.8 + 2,
+          (Math.random() - 0.5) * 3.5
         );
-        p.userData.life = 80 + Math.random()*35;
+        p.userData.life = 60 + Math.random() * 40;
+
         scene.add(p);
         tetrominoMeshes.push(p);
       }
@@ -275,25 +316,32 @@
       tetrominoMeshes.forEach((obj, i) => {
         if (!obj || !obj.parent) return;
 
-        if (obj.userData.rotSpeedY) obj.rotation.y += obj.userData.rotSpeedY * 0.015;
-
-        if (obj.userData.floatSpeed) {
-          obj.position.y += Math.sin(Date.now() * 0.0015 + i) * 0.09;
+        if (obj.userData.rotSpeed) {
+          obj.rotation.y += obj.userData.rotSpeed * 0.012;
+          obj.rotation.x = Math.sin(Date.now() * 0.0008 + i) * 0.22;
         }
 
-        if (obj.position.z < 115) obj.position.z += 2.3;
+        if (obj.userData.floatSpeed) {
+          obj.position.y += Math.sin(Date.now() * 0.0014 + i) * 0.1;
+        }
 
-        // Simple repulsion
+        if (obj.position.z < 160) {
+          obj.position.z += 2.1;
+        }
+
+        // Simple repulsion between tetrominoes (they push each other)
         tetrominoMeshes.forEach(other => {
           if (other === obj || !other.parent || other.userData?.exploded) return;
+
           const dx = obj.position.x - other.position.x;
           const dy = obj.position.y - other.position.y;
           const dz = obj.position.z - other.position.z;
           const distSq = dx*dx + dy*dy + dz*dz;
 
-          if (distSq > 0.1 && distSq < 4200) {
+          if (distSq > 0.1 && distSq < 4200) { // ~65 units
             const dist = Math.sqrt(distSq);
             const force = (65 - dist) * 0.028;
+
             obj.position.x += (dx / dist) * force;
             obj.position.y += (dy / dist) * force;
             obj.position.z += (dz / dist) * force * 0.5;
@@ -302,7 +350,7 @@
 
         if (obj.userData.velocity) {
           obj.position.add(obj.userData.velocity);
-          obj.userData.velocity.y -= 0.11;
+          obj.userData.velocity.y -= 0.09;
           obj.userData.life--;
 
           if (obj.userData.life <= 0) {
@@ -320,24 +368,25 @@
       const overlay = document.getElementById('start-overlay');
       const threeContainer = document.getElementById('three-container');
 
+      overlay.classList.add('rushing', 'glitching');
       isThreeActive = false;
 
-      // Explode remaining 3D tetrominoes
       tetrominoMeshes.forEach(obj => {
         if (obj && obj.parent && !obj.userData.exploded) {
           const color = obj.children?.[0]?.material?.color?.getHex() || 0x00f9ff;
-          for (let k = 0; k < 12; k++) {
-            const p = new THREE.Mesh(
-              new THREE.BoxGeometry(5 + Math.random()*6, 5 + Math.random()*6, 5 + Math.random()*6),
-              new THREE.MeshPhongMaterial({ color })
-            );
+
+          for (let k = 0; k < 11; k++) {
+            const size = 5 + Math.random() * 7;
+            const geo = new THREE.BoxGeometry(size, size, size);
+            const mat = new THREE.MeshPhongMaterial({ color });
+            const p = new THREE.Mesh(geo, mat);
             p.position.copy(obj.position);
             p.userData.velocity = new THREE.Vector3(
-              (Math.random()-0.5)*5.8,
-              (Math.random()-0.5)*5.8 + 2.8,
-              (Math.random()-0.5)*4.8
+              (Math.random() - 0.5) * 5.5,
+              (Math.random() - 0.5) * 5.5 + 2.2,
+              (Math.random() - 0.5) * 4
             );
-            p.userData.life = 70 + Math.random()*35;
+            p.userData.life = 55 + Math.random() * 35;
             scene.add(p);
             tetrominoMeshes.push(p);
           }
@@ -348,22 +397,23 @@
 
       playExplosionSound();
 
-      // Simple clean transition (no fancy camera movement)
       if (threeContainer) {
-        threeContainer.style.transition = 'opacity 0.4s ease';
+        threeContainer.style.transition = 'opacity 0.45s ease, transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
         threeContainer.style.opacity = '0';
+        threeContainer.style.transform = 'scale(1.12)';
       }
 
       setTimeout(() => {
-        overlay.classList.remove('active');
+        overlay.classList.remove('active', 'rushing', 'glitching');
 
         if (renderer) {
           renderer.dispose();
-          if (threeContainer) threeContainer.innerHTML = '';
+          const container = document.getElementById('three-container');
+          if (container) container.innerHTML = '';
         }
 
         startGame();
-      }, 650);
+      }, 1050);
     }
 
     function playExplosionSound() {
@@ -372,20 +422,22 @@
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.value = 48;
-        gain.gain.value = 0.7;
+        osc.frequency.value = 52;
+        gain.gain.value = 0.65;
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
         setTimeout(() => {
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
-          setTimeout(() => osc.stop(), 800);
-        }, 25);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.75);
+          setTimeout(() => osc.stop(), 850);
+        }, 35);
       } catch(e) {}
     }
 
     window.onload = function() {
-      setTimeout(() => { initThreeJS(); }, 80);
+      setTimeout(() => {
+        initThreeJS();
+      }, 120);
     };
   </script>
 </body>
