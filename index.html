@@ -11,22 +11,23 @@
       transform-style: preserve-3d;
       cursor: pointer;
       transition: filter 0.1s;
+      filter: blur(0.3px);
     }
     .tetromino-3d .block {
       position: absolute;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #fff;
-      box-shadow: 0 0 10px currentColor, inset 0 0 6px rgba(255,255,255,0.7);
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid #fff;
+      box-shadow: 0 0 14px currentColor, inset 0 0 8px rgba(255,255,255,0.6);
       background: currentColor;
       transform-style: preserve-3d;
     }
     .particle {
       position: absolute;
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 2px;
-      box-shadow: 0 0 8px currentColor;
+      box-shadow: 0 0 10px currentColor;
       background: currentColor;
       pointer-events: none;
       z-index: 10;
@@ -136,14 +137,16 @@
     const overlay = document.getElementById('start-overlay');
     let tetrominoes = [];
 
-    // Create a real 3D tetromino shape
     function createTetrominoShape(type, color, x, y) {
       const container = document.createElement('div');
       container.className = 'tetromino-3d';
       container.style.left = x + 'px';
       container.style.top = y + 'px';
       container.style.color = color;
-      container.style.transform = `translateZ(${Math.random() * 200 - 400}px) scale(0.4) rotateX(30deg) rotateY(${Math.random()*40-20}deg)`;
+
+      // Start further away in 3D space + bigger when close
+      const startZ = -650 - Math.random() * 250;
+      container.style.transform = `translateZ(${startZ}px) scale(0.35) rotateX(28deg) rotateY(${Math.random()*50-25}deg)`;
 
       const shapes = {
         'I': [[0,0],[0,1],[0,2],[0,3]],
@@ -160,12 +163,12 @@
       layout.forEach(([bx, by]) => {
         const block = document.createElement('div');
         block.className = 'block';
-        block.style.left = (bx * 18) + 'px';
-        block.style.top = (by * 18) + 'px';
+        block.style.left = (bx * 22) + 'px';
+        block.style.top = (by * 22) + 'px';
         container.appendChild(block);
       });
 
-      // Click to explode into particles
+      // Click to explode
       container.addEventListener('click', () => {
         explodeIntoParticles(container, color);
       });
@@ -173,21 +176,34 @@
       overlay.appendChild(container);
       tetrominoes.push(container);
 
-      // Floating animation
+      // Self rotation + floating (3D object feel)
       container.animate([
-        { transform: container.style.transform },
-        { transform: `translateZ(${Math.random()*300-150}px) scale(1.1) rotateX(${Math.random()*20-10}deg) rotateY(${Math.random()*30-15}deg)` }
+        { 
+          transform: container.style.transform 
+        },
+        { 
+          transform: `translateZ(${startZ + 280}px) scale(1.35) rotateX(${28 + Math.random()*12}deg) rotateY(${Math.random()*90 - 45}deg)` 
+        }
       ], {
-        duration: 4500 + Math.random() * 2000,
+        duration: 5200 + Math.random() * 1800,
         iterations: Infinity,
         direction: 'alternate',
         easing: 'ease-in-out'
       });
 
+      // Extra self-spin for 3D object feeling
+      container.animate([
+        { transform: 'rotateY(0deg)' },
+        { transform: 'rotateY(360deg)' }
+      ], {
+        duration: 3800 + Math.random() * 2200,
+        iterations: Infinity,
+        easing: 'linear'
+      });
+
       return container;
     }
 
-    // Explode a tetromino into flying particles
     function explodeIntoParticles(element, color) {
       const rect = element.getBoundingClientRect();
       const overlayRect = overlay.getBoundingClientRect();
@@ -198,40 +214,32 @@
       element.remove();
       playExplosionSound();
 
-      // Create 8-12 particles
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 12; i++) {
         const p = document.createElement('div');
         p.className = 'particle';
         p.style.background = color;
         p.style.left = centerX + 'px';
         p.style.top = centerY + 'px';
-        p.style.width = (6 + Math.random() * 6) + 'px';
+        p.style.width = (7 + Math.random() * 7) + 'px';
         p.style.height = p.style.width;
 
         overlay.appendChild(p);
 
-        const angle = (i / 10) * Math.PI * 2 + (Math.random() - 0.5) * 0.8;
-        const velocity = 180 + Math.random() * 120;
+        const angle = (i / 12) * Math.PI * 2 + (Math.random() - 0.5) * 1.1;
+        const velocity = 200 + Math.random() * 160;
         const tx = Math.cos(angle) * velocity;
-        const ty = Math.sin(angle) * velocity - 80; // slight upward bias
+        const ty = Math.sin(angle) * velocity - 70;
 
         p.animate([
-          { 
-            transform: 'translate(0,0) scale(1)', 
-            opacity: 1 
-          },
-          { 
-            transform: `translate(${tx}px, ${ty}px) scale(0.3)`, 
-            opacity: 0 
-          }
+          { transform: 'translate(0,0) scale(1)', opacity: 1 },
+          { transform: `translate(${tx}px, ${ty}px) scale(0.2)`, opacity: 0 }
         ], {
-          duration: 650 + Math.random() * 400,
+          duration: 720 + Math.random() * 380,
           easing: 'cubic-bezier(0.23, 1, 0.32, 1)'
         }).onfinish = () => p.remove();
       }
     }
 
-    // Spawn tetrominoes randomly over time
     function spawnRandomTetrominoes() {
       const types = ['I','T','L','J','O','S','Z'];
       const colors = ['#00f9ff', '#ff00aa', '#c084fc', '#00f9ff', '#ff00aa', '#c084fc', '#00f9ff'];
@@ -239,7 +247,7 @@
       let count = 0;
 
       const interval = setInterval(() => {
-        if (!overlay.classList.contains('active') || count >= 7) {
+        if (!overlay.classList.contains('active') || count >= 8) {
           clearInterval(interval);
           return;
         }
@@ -247,12 +255,12 @@
         const type = types[Math.floor(Math.random() * types.length)];
         const color = colors[Math.floor(Math.random() * colors.length)];
 
-        const x = 40 + Math.random() * (overlay.offsetWidth - 120);
-        const y = 60 + Math.random() * (overlay.offsetHeight - 200);
+        const x = 30 + Math.random() * (overlay.offsetWidth - 140);
+        const y = 50 + Math.random() * (overlay.offsetHeight - 220);
 
         createTetrominoShape(type, color, x, y);
         count++;
-      }, 420); // spawn every ~420ms
+      }, 380);
     }
 
     function playExplosionSound() {
@@ -261,22 +269,21 @@
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.value = 70;
-        gain.gain.value = 0.5;
+        osc.frequency.value = 65;
+        gain.gain.value = 0.55;
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
         setTimeout(() => {
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
-          setTimeout(() => osc.stop(), 700);
-        }, 60);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.65);
+          setTimeout(() => osc.stop(), 750);
+        }, 50);
       } catch(e) {}
     }
 
     function launchGameWithEffect() {
       overlay.classList.add('rushing', 'glitching');
 
-      // Explode all remaining tetrominoes
       tetrominoes.forEach(t => {
         if (t.parentNode) {
           const color = t.style.color || '#00f9ff';
@@ -290,15 +297,13 @@
       setTimeout(() => {
         overlay.classList.remove('active', 'rushing', 'glitching');
         startGame();
-      }, 950);
+      }, 980);
     }
 
-    // Initialize
     window.onload = function() {
-      // Start spawning tetrominoes after a short delay
       setTimeout(() => {
         spawnRandomTetrominoes();
-      }, 300);
+      }, 280);
     };
   </script>
 </body>
