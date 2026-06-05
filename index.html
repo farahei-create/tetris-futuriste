@@ -113,7 +113,10 @@
 
     function initThreeJS() {
       const container = document.getElementById('three-container');
-      if (!container) return;
+      if (!container) {
+        console.error('Three container not found');
+        return;
+      }
 
       renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
@@ -160,10 +163,10 @@
         }
       });
 
-      // Start spawning immediately after init
+      // Spawn tetrominoes reliably
       setTimeout(() => {
-        spawnRandomTetrominoes();
-      }, 200);
+        spawnTetrominoesReliably();
+      }, 180);
 
       window.addEventListener('resize', () => {
         if (renderer && camera) {
@@ -245,29 +248,32 @@
       }
     }
 
-    function spawnRandomTetrominoes() {
+    function spawnTetrominoesReliably() {
       const types = ['I','T','L','J','O','S','Z'];
       const colors = [0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff];
 
       let count = 0;
-      const max = 10;
+      const total = 9;
 
-      const interval = setInterval(() => {
+      function spawnOne() {
+        if (count >= total) return;
+
         const overlay = document.getElementById('start-overlay');
-        if (!overlay || !overlay.classList.contains('active') || count >= max) {
-          clearInterval(interval);
-          return;
-        }
+        if (!overlay || !overlay.classList.contains('active')) return;
 
         const type = types[Math.floor(Math.random() * types.length)];
         const color = colors[Math.floor(Math.random() * colors.length)];
-        const x = (Math.random() - 0.5) * 400;
-        const y = (Math.random() - 0.5) * 300 - 20;
-        const z = -420 - Math.random() * 160;
+        const x = (Math.random() - 0.5) * 380;
+        const y = (Math.random() - 0.5) * 280 - 10;
+        const z = -400 - Math.random() * 140;
 
         create3DTetromino(type, color, x, y, z);
         count++;
-      }, 280);
+
+        setTimeout(spawnOne, 260);
+      }
+
+      spawnOne();
     }
 
     function animate() {
@@ -287,13 +293,13 @@
           obj.rotation.y += obj.userData.rotSpeedY * 0.015;
         }
 
-        if (obj.position.z < 115) {
-          obj.position.z += 2.3;
+        if (obj.position.z < 110) {
+          obj.position.z += 2.4;
         }
 
         if (obj.userData.velocity) {
           obj.position.add(obj.userData.velocity);
-          obj.userData.velocity.y -= 0.11;
+          obj.userData.velocity.y -= 0.115;
           obj.userData.life--;
 
           if (obj.userData.life <= 0) {
@@ -353,7 +359,7 @@
         }
 
         startGame();
-      }, 850);
+      }, 820);
     }
 
     function playExplosionSound() {
@@ -377,7 +383,7 @@
     window.onload = function() {
       setTimeout(() => {
         initThreeJS();
-      }, 60);
+      }, 50);
     };
   </script>
 </body>
