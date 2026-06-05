@@ -113,27 +113,30 @@
 
     function initThreeJS() {
       const container = document.getElementById('three-container');
+      if (!container) return;
+
       renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       container.appendChild(renderer.domElement);
 
       scene = new THREE.Scene();
+
       camera = new THREE.PerspectiveCamera(55, container.clientWidth / container.clientHeight, 0.1, 2000);
-      camera.position.set(0, 0, 400);
+      camera.position.set(0, 0, 420);
 
       const ambient = new THREE.AmbientLight(0x112244, 0.6);
       scene.add(ambient);
 
-      const cyanLight = new THREE.PointLight(0x00f9ff, 1.3, 850);
-      cyanLight.position.set(0, 90, 260);
+      const cyanLight = new THREE.PointLight(0x00f9ff, 1.3, 900);
+      cyanLight.position.set(0, 80, 280);
       scene.add(cyanLight);
 
-      const pinkLight = new THREE.PointLight(0xff00aa, 1.0, 750);
-      pinkLight.position.set(-60, -70, 200);
+      const pinkLight = new THREE.PointLight(0xff00aa, 1.0, 800);
+      pinkLight.position.set(60, -60, 220);
       scene.add(pinkLight);
 
-      // Simple global click to explode
+      // Global click handler
       renderer.domElement.addEventListener('click', (e) => {
         if (!isThreeActive) return;
 
@@ -157,14 +160,17 @@
         }
       });
 
+      // Start spawning immediately after init
       setTimeout(() => {
-        if (isThreeActive) spawnRandomTetrominoes();
-      }, 250);
+        spawnRandomTetrominoes();
+      }, 200);
 
       window.addEventListener('resize', () => {
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
+        if (renderer && camera) {
+          renderer.setSize(container.clientWidth, container.clientHeight);
+          camera.aspect = container.clientWidth / container.clientHeight;
+          camera.updateProjectionMatrix();
+        }
       });
 
       animate();
@@ -174,7 +180,7 @@
       const group = new THREE.Group();
       group.userData = { type, exploded: false };
 
-      const material = new THREE.MeshPhongMaterial({ color, shininess: 38 });
+      const material = new THREE.MeshPhongMaterial({ color, shininess: 40 });
       const blockSize = 22;
       const gap = 1.6;
 
@@ -248,7 +254,7 @@
 
       const interval = setInterval(() => {
         const overlay = document.getElementById('start-overlay');
-        if (!overlay || !overlay.classList.contains('active') || count >= max || !isThreeActive) {
+        if (!overlay || !overlay.classList.contains('active') || count >= max) {
           clearInterval(interval);
           return;
         }
@@ -257,11 +263,11 @@
         const color = colors[Math.floor(Math.random() * colors.length)];
         const x = (Math.random() - 0.5) * 400;
         const y = (Math.random() - 0.5) * 300 - 20;
-        const z = -450 - Math.random() * 180;
+        const z = -420 - Math.random() * 160;
 
         create3DTetromino(type, color, x, y, z);
         count++;
-      }, 300);
+      }, 280);
     }
 
     function animate() {
@@ -281,8 +287,8 @@
           obj.rotation.y += obj.userData.rotSpeedY * 0.015;
         }
 
-        if (obj.position.z < 120) {
-          obj.position.z += 2.2;
+        if (obj.position.z < 115) {
+          obj.position.z += 2.3;
         }
 
         if (obj.userData.velocity) {
@@ -308,7 +314,6 @@
       isThreeActive = false;
       overlay.classList.add('rushing');
 
-      // Explode all remaining tetrominoes
       tetrominoMeshes.forEach(obj => {
         if (obj && obj.parent && !obj.userData.exploded) {
           const color = obj.children?.[0]?.material?.color?.getHex() || 0x00f9ff;
@@ -334,7 +339,6 @@
 
       playExplosionSound();
 
-      // Simple clean transition (no crazy camera movement)
       if (threeContainer) {
         threeContainer.style.transition = 'opacity 0.5s ease';
         threeContainer.style.opacity = '0';
@@ -349,7 +353,7 @@
         }
 
         startGame();
-      }, 900);
+      }, 850);
     }
 
     function playExplosionSound() {
@@ -373,7 +377,7 @@
     window.onload = function() {
       setTimeout(() => {
         initThreeJS();
-      }, 80);
+      }, 60);
     };
   </script>
 </body>
