@@ -317,6 +317,7 @@
 
       animate();
 
+      // Spawn 11 tetrominoes - NO CHECK on overlay class (more reliable)
       setTimeout(() => {
         for (let i = 0; i < 11; i++) {
           setTimeout(() => {
@@ -327,10 +328,11 @@
             const x = (Math.random() - 0.5) * 380;
             const y = (Math.random() - 0.5) * 280 - 10;
             const z = -400 - Math.random() * 140;
+
             create3DTetromino(type, color, x, y, z);
           }, i * 220);
         }
-      }, 150);
+      }, 180);
     }
 
     function create3DTetromino(type, color, x, y, z) {
@@ -470,6 +472,7 @@
           obj.position.add(obj.userData.velocity);
           obj.userData.velocity.y -= 0.11;
           obj.userData.life--;
+
           if (obj.userData.life <= 0) {
             scene.remove(obj);
             const idx = tetrominoMeshes.indexOf(obj);
