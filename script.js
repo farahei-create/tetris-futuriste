@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE v2.3 - Dramatic 3D Fullscreen Launch Transition === */
+/* === TETRIS NÉON FUTURISTE v3.0 - Premium Cinematic Futuristic Redesign + Longer Ultra-Fluid Launch === */
 
 let BLOCK_SIZE = 28;
 const COLS = 10;
@@ -146,13 +146,13 @@ function resizeGame() {
   const sizeByWidth = Math.floor(availableWidth / COLS);
   const sizeByHeight = Math.floor(availableHeight / ROWS);
   BLOCK_SIZE = Math.min(sizeByWidth, sizeByHeight);
-  if (BLOCK_SIZE > 42) BLOCK_SIZE = 42; // allow bigger in fullscreen
+  if (BLOCK_SIZE > 44) BLOCK_SIZE = 44;
   if (BLOCK_SIZE < 24) BLOCK_SIZE = 24;
 
   canvas.width = COLS * BLOCK_SIZE;
   canvas.height = ROWS * BLOCK_SIZE;
 
-  const nextSize = Math.min(110, BLOCK_SIZE * 3.8 + 6);
+  const nextSize = Math.min(115, BLOCK_SIZE * 3.8 + 6);
   if (nextCanvas) {
     nextCanvas.width = nextSize;
     nextCanvas.height = nextSize;
@@ -217,7 +217,7 @@ function createNewPiece() {
 function drawNextPiece() {
   if (!nextCtx || !nextPieceType) return;
   const size = nextCanvas.width;
-  nextCtx.fillStyle = '#0a0a1a';
+  nextCtx.fillStyle = '#05050f';
   nextCtx.fillRect(0, 0, size, size);
 
   const shape = SHAPES[nextPieceType][0];
@@ -226,19 +226,19 @@ function drawNextPiece() {
   const offsetX = Math.floor((size - block * 4) / 2);
   const offsetY = Math.floor((size - block * 3) / 2);
 
-  nextCtx.shadowBlur = 12;
+  nextCtx.shadowBlur = 14;
   nextCtx.shadowColor = color;
   shape.forEach(([dx, dy]) => {
     const px = offsetX + dx * block;
     const py = offsetY + dy * block;
-    nextCtx.fillStyle = 'rgba(10,10,26,0.6)';
+    nextCtx.fillStyle = 'rgba(5,5,15,0.7)';
     nextCtx.fillRect(px + 1, py + 1, block - 2, block - 2);
     nextCtx.strokeStyle = color;
-    nextCtx.lineWidth = 2.5;
+    nextCtx.lineWidth = 2.8;
     nextCtx.strokeRect(px + 1, py + 1, block - 2, block - 2);
     nextCtx.strokeStyle = '#ffffff';
-    nextCtx.lineWidth = 1;
-    nextCtx.strokeRect(px + 3, py + 3, block - 6, block - 6);
+    nextCtx.lineWidth = 1.2;
+    nextCtx.strokeRect(px + 3, py + 3, block - 7, block - 7);
   });
   nextCtx.shadowBlur = 0;
 }
@@ -246,7 +246,7 @@ function drawNextPiece() {
 function drawHoldPiece() {
   if (!holdCtx || !holdCanvas) return;
   const size = holdCanvas.width;
-  holdCtx.fillStyle = '#0a0a1a';
+  holdCtx.fillStyle = '#05050f';
   holdCtx.fillRect(0, 0, size, size);
 
   if (!heldPiece) return;
@@ -257,19 +257,19 @@ function drawHoldPiece() {
   const offsetX = Math.floor((size - block * 4) / 2);
   const offsetY = Math.floor((size - block * 3) / 2);
 
-  holdCtx.shadowBlur = 10;
+  holdCtx.shadowBlur = 12;
   holdCtx.shadowColor = color;
   shape.forEach(([dx, dy]) => {
     const px = offsetX + dx * block;
     const py = offsetY + dy * block;
-    holdCtx.fillStyle = 'rgba(10,10,26,0.6)';
+    holdCtx.fillStyle = 'rgba(5,5,15,0.7)';
     holdCtx.fillRect(px + 1, py + 1, block - 2, block - 2);
     holdCtx.strokeStyle = color;
-    holdCtx.lineWidth = 2.2;
+    holdCtx.lineWidth = 2.5;
     holdCtx.strokeRect(px + 1, py + 1, block - 2, block - 2);
     holdCtx.strokeStyle = '#ffffff';
-    holdCtx.lineWidth = 1;
-    holdCtx.strokeRect(px + 3, py + 3, block - 6, block - 6);
+    holdCtx.lineWidth = 1.2;
+    holdCtx.strokeRect(px + 3, py + 3, block - 7, block - 7);
   });
   holdCtx.shadowBlur = 0;
 }
@@ -290,11 +290,11 @@ function drawGhostPiece() {
 
   const shape = SHAPES[currentPiece.type][currentPiece.rotation];
   ctx.save();
-  ctx.globalAlpha = 0.22;
-  ctx.shadowBlur = 6;
+  ctx.globalAlpha = 0.2;
+  ctx.shadowBlur = 8;
   ctx.shadowColor = currentPiece.color;
   ctx.strokeStyle = currentPiece.color;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 2.2;
 
   shape.forEach(([dx, dy]) => {
     const x = currentPiece.x + dx;
@@ -435,7 +435,7 @@ function clearLines() {
       level = newLevel;
       dropInterval = Math.max(100, 800 - (level - 1) * 55);
       flashBoard();
-      triggerGlitch(0.6);
+      triggerGlitch(0.65);
       playSound('clear');
     } else {
       dropInterval = Math.max(100, 800 - (level - 1) * 55);
@@ -446,16 +446,16 @@ function clearLines() {
 }
 
 function createLineParticles(rowY, intense = false) {
-  const count = intense ? 38 : 20;
+  const count = intense ? 42 : 22;
   for (let i = 0; i < count; i++) {
     particles.push({
       x: Math.random() * canvas.width,
       y: rowY * BLOCK_SIZE + BLOCK_SIZE / 2,
-      vx: (Math.random() - 0.5) * (intense ? 7.5 : 5),
-      vy: (Math.random() - 0.5) * (intense ? 4.2 : 3) - 1.2,
+      vx: (Math.random() - 0.5) * (intense ? 8 : 5.2),
+      vy: (Math.random() - 0.5) * (intense ? 4.5 : 3.2) - 1.3,
       alpha: 1,
       color: intense ? '#c084fc' : '#00f9ff',
-      size: Math.random() * 5.5 + 2.8
+      size: Math.random() * 6 + 3
     });
   }
 }
@@ -465,14 +465,14 @@ function updateParticles() {
     const p = particles[i];
     p.x += p.vx;
     p.y += p.vy;
-    p.vy += 0.12;
-    p.alpha -= 0.026;
+    p.vy += 0.13;
+    p.alpha -= 0.028;
     if (p.alpha <= 0) particles.splice(i, 1);
   }
 }
 
 function drawParticles() {
-  ctx.shadowBlur = 5;
+  ctx.shadowBlur = 6;
   particles.forEach(p => {
     ctx.globalAlpha = p.alpha;
     ctx.fillStyle = p.color;
@@ -483,19 +483,19 @@ function drawParticles() {
 }
 
 function flashBoard() {
-  ctx.fillStyle = 'rgba(192, 132, 252, 0.35)';
+  ctx.fillStyle = 'rgba(192, 132, 252, 0.4)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  setTimeout(() => { if (!gameOver && !paused) draw(); }, 55);
+  setTimeout(() => { if (!gameOver && !paused) draw(); }, 60);
 }
 
 function triggerGlitch(intensity) {
   glitchIntensity = intensity;
-  setTimeout(() => { glitchIntensity = 0; }, 160);
+  setTimeout(() => { glitchIntensity = 0; }, 180);
 }
 
 function drawGrid() {
-  ctx.strokeStyle = 'rgba(157, 78, 221, 0.09)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(157, 78, 221, 0.11)';
+  ctx.lineWidth = 1.2;
   for (let x = 0; x <= COLS; x++) {
     ctx.beginPath();
     ctx.moveTo(x * BLOCK_SIZE, 0);
@@ -512,9 +512,9 @@ function drawGrid() {
 
 function drawBoard() {
   const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  grad.addColorStop(0, '#12071f');
-  grad.addColorStop(0.5, '#1a0a2e');
-  grad.addColorStop(1, '#0f0618');
+  grad.addColorStop(0, '#0a0618');
+  grad.addColorStop(0.45, '#12071f');
+  grad.addColorStop(1, '#05050f');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawBackgroundBubbles();
@@ -527,11 +527,11 @@ function drawBoard() {
   }
 
   if (glitchIntensity > 0) {
-    ctx.fillStyle = `rgba(255,255,255,${glitchIntensity * 0.22})`;
+    ctx.fillStyle = `rgba(255,255,255,${glitchIntensity * 0.25})`;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    if (Math.random() > 0.5) {
-      ctx.fillStyle = 'rgba(157, 78, 221, 0.35)';
-      ctx.fillRect(Math.random() * canvas.width * 0.9, 0, 5, canvas.height);
+    if (Math.random() > 0.45) {
+      ctx.fillStyle = 'rgba(157, 78, 221, 0.4)';
+      ctx.fillRect(Math.random() * canvas.width * 0.92, 0, 6, canvas.height);
     }
   }
 }
@@ -543,29 +543,29 @@ function drawBlock(x, y, color) {
   const py = y * BLOCK_SIZE;
   const size = BLOCK_SIZE;
 
-  ctx.fillStyle = 'rgba(10, 10, 26, 0.85)';
+  ctx.fillStyle = 'rgba(5, 5, 15, 0.88)';
   ctx.fillRect(px + 1, py + 1, size - 2, size - 2);
 
-  ctx.shadowBlur = 18;
+  ctx.shadowBlur = 22;
   ctx.shadowColor = color;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 3.5;
+  ctx.lineWidth = 4;
   ctx.strokeRect(px + 2, py + 2, size - 4, size - 4);
 
-  ctx.shadowBlur = 6;
+  ctx.shadowBlur = 8;
   ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(px + 4.5, py + 4.5, size - 9, size - 9);
+  ctx.lineWidth = 1.8;
+  ctx.strokeRect(px + 5, py + 5, size - 10, size - 10);
 
   ctx.shadowBlur = 0;
-  ctx.fillStyle = 'rgba(255,255,255,0.12)';
-  ctx.fillRect(px + 5, py + 5, size - 10, size - 10);
+  ctx.fillStyle = 'rgba(255,255,255,0.14)';
+  ctx.fillRect(px + 6, py + 6, size - 12, size - 12);
 }
 
 function drawCurrentPiece() {
   if (!currentPiece) return;
   const shape = SHAPES[currentPiece.type][currentPiece.rotation];
-  ctx.shadowBlur = 22;
+  ctx.shadowBlur = 26;
   ctx.shadowColor = currentPiece.color;
   shape.forEach(([dx, dy]) => {
     const x = currentPiece.x + dx;
@@ -614,35 +614,35 @@ function playSound(type) {
 
   if (type === 'clear') {
     const noise = audioCtx.createBufferSource();
-    const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.52, audioCtx.sampleRate);
+    const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.55, audioCtx.sampleRate);
     const data = noiseBuffer.getChannelData(0);
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
     noise.buffer = noiseBuffer;
 
     const noiseFilter = audioCtx.createBiquadFilter();
     noiseFilter.type = 'bandpass';
-    noiseFilter.frequency.value = 760;
-    noiseFilter.Q.value = 1.5;
+    noiseFilter.frequency.value = 780;
+    noiseFilter.Q.value = 1.6;
 
     const noiseGain = audioCtx.createGain();
-    noiseGain.gain.value = 0.5;
+    noiseGain.gain.value = 0.55;
     const noiseEnv = audioCtx.createGain();
 
     const osc = audioCtx.createOscillator();
     osc.type = 'sawtooth';
-    osc.frequency.value = 155;
+    osc.frequency.value = 158;
     const oscFilter = audioCtx.createBiquadFilter();
     oscFilter.type = 'lowpass';
-    oscFilter.frequency.value = 1050;
+    oscFilter.frequency.value = 1080;
     const oscGain = audioCtx.createGain();
-    oscGain.gain.value = 0.38;
+    oscGain.gain.value = 0.4;
 
     const masterGain = audioCtx.createGain();
-    noiseEnv.gain.setValueAtTime(0.6, now);
-    noiseEnv.gain.linearRampToValueAtTime(0.001, now + 0.48);
-    oscGain.gain.setValueAtTime(0.38, now);
-    oscGain.gain.linearRampToValueAtTime(0.001, now + 0.36);
-    masterGain.gain.value = 0.78;
+    noiseEnv.gain.setValueAtTime(0.65, now);
+    noiseEnv.gain.linearRampToValueAtTime(0.001, now + 0.52);
+    oscGain.gain.setValueAtTime(0.4, now);
+    oscGain.gain.linearRampToValueAtTime(0.001, now + 0.4);
+    masterGain.gain.value = 0.82;
 
     noise.connect(noiseFilter);
     noiseFilter.connect(noiseEnv);
@@ -654,8 +654,8 @@ function playSound(type) {
 
     noise.start(now);
     osc.start(now);
-    noise.stop(now + 0.52);
-    osc.stop(now + 0.4);
+    noise.stop(now + 0.55);
+    osc.stop(now + 0.42);
     return;
   }
 
@@ -663,48 +663,48 @@ function playSound(type) {
   const gain = audioCtx.createGain();
   const filter = audioCtx.createBiquadFilter();
   filter.type = 'lowpass';
-  let freq = 220, duration = 0.11, volume = 0.24;
+  let freq = 225, duration = 0.115, volume = 0.26;
   osc.type = 'sawtooth';
 
   switch (type) {
     case 'move':
       osc.type = 'square';
-      freq = 150 + Math.random() * 30;
-      duration = 0.035;
-      volume = 0.15;
-      filter.frequency.value = 820;
+      freq = 152 + Math.random() * 32;
+      duration = 0.038;
+      volume = 0.16;
+      filter.frequency.value = 840;
       break;
     case 'rotate':
       osc.type = 'sawtooth';
-      freq = 470;
-      duration = 0.09;
-      volume = 0.22;
-      filter.frequency.value = 1450;
-      osc.frequency.setValueAtTime(470, now);
-      osc.frequency.linearRampToValueAtTime(690, now + 0.07);
+      freq = 475;
+      duration = 0.095;
+      volume = 0.24;
+      filter.frequency.value = 1480;
+      osc.frequency.setValueAtTime(475, now);
+      osc.frequency.linearRampToValueAtTime(695, now + 0.075);
       break;
     case 'lock':
       osc.type = 'sawtooth';
-      freq = 82;
-      duration = 0.18;
-      volume = 0.32;
-      filter.frequency.value = 600;
+      freq = 84;
+      duration = 0.19;
+      volume = 0.34;
+      filter.frequency.value = 620;
       break;
     case 'hard':
       osc.type = 'sawtooth';
-      freq = 60;
-      duration = 0.24;
-      volume = 0.46;
-      filter.frequency.value = 400;
+      freq = 62;
+      duration = 0.26;
+      volume = 0.48;
+      filter.frequency.value = 410;
       const osc2 = audioCtx.createOscillator();
       osc2.type = 'sine';
-      osc2.frequency.value = 48;
+      osc2.frequency.value = 49;
       const g2 = audioCtx.createGain();
-      g2.gain.value = 0.28;
+      g2.gain.value = 0.3;
       osc2.connect(g2);
       g2.connect(audioCtx.destination);
       osc2.start(now);
-      osc2.stop(now + 0.3);
+      osc2.stop(now + 0.32);
       break;
   }
 
@@ -718,7 +718,7 @@ function playSound(type) {
   gain.connect(master);
   master.connect(audioCtx.destination);
   osc.start(now);
-  osc.stop(now + duration + 0.03);
+  osc.stop(now + duration + 0.035);
 }
 
 // Touch & Keyboard
@@ -750,15 +750,15 @@ function handleTouchEnd(e) {
     scheduleHideControls();
     return;
   }
-  if (absX > absY && absX > 30) {
+  if (absX > absY && absX > 32) {
     if (deltaX > 0) moveRight();
     else moveLeft();
     showControls();
     scheduleHideControls();
     return;
   }
-  if (deltaY > 35) {
-    if (duration < 160 && deltaY > 80) {
+  if (deltaY > 36) {
+    if (duration < 165 && deltaY > 82) {
       hardDrop();
     } else {
       softDrop();
@@ -793,17 +793,15 @@ function startGame() {
   const wrapper = document.querySelector('.game-wrapper');
   startOverlay.classList.remove('active');
 
-  // === EPIC 3D FUTURISTIC LAUNCH TRANSITION ===
+  // === LONGER & ULTRA-FLUID 3D FUTURISTIC LAUNCH (v3) ===
   wrapper.classList.add('launching');
 
-  // Optional: real browser fullscreen for maximum immersion
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen().catch(() => {});
   } else if (wrapper.requestFullscreen) {
     wrapper.requestFullscreen().catch(() => {});
   }
 
-  // When the beautiful 3D transition finishes, start the actual game
   const finalizeLaunch = () => {
     wrapper.classList.remove('launching');
     wrapper.removeEventListener('transitionend', finalizeLaunch);
@@ -813,8 +811,7 @@ function startGame() {
     animationFrame = requestAnimationFrame(gameLoop);
     showControls();
     scheduleHideControls();
-    // Final resize to perfectly fill the new fullscreen
-    setTimeout(resizeGame, 60);
+    setTimeout(resizeGame, 80);
   };
   wrapper.addEventListener('transitionend', finalizeLaunch, { once: true });
 }
@@ -841,14 +838,14 @@ function endGame() {
   document.getElementById('final-score').textContent = `Score final : ${score.toString().padStart(6, '0')}`;
   setTimeout(() => {
     gameOverOverlay.classList.add('active');
-  }, 260);
+  }, 280);
 }
 
 function restartGame() {
   gameOverOverlay.classList.remove('active');
   pauseOverlay.classList.remove('active');
   startOverlay.classList.remove('active');
-  isFullscreenMode = false; // reset on restart
+  isFullscreenMode = false;
   resetGame();
   lastDropTime = performance.now();
   animationFrame = requestAnimationFrame(gameLoop);
@@ -859,7 +856,6 @@ function init() {
   resizeGame();
   loadBestScore();
 
-  // Auto-hide controls
   if (controlsOverlay) {
     controlsOverlay.style.opacity = '0.12';
     controlsOverlay.style.pointerEvents = 'none';
@@ -867,7 +863,7 @@ function init() {
 
   window.addEventListener('resize', () => {
     clearTimeout(window.resizeTimeout);
-    window.resizeTimeout = setTimeout(resizeGame, 120);
+    window.resizeTimeout = setTimeout(resizeGame, 130);
   });
 
   document.addEventListener('keydown', handleKeyboard);
@@ -882,14 +878,14 @@ function init() {
     });
   });
 
-  ctx.fillStyle = '#12071f';
+  ctx.fillStyle = '#05050f';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   setTimeout(() => {
     if (!gameOver && !paused && controlsOverlay) hideControls();
-  }, 1800);
+  }, 1900);
 
-  console.log('%c[Tetris Neon v2.3] 3D Futuristic Fullscreen Launch Transition activé !', 'color:#00f9ff');
+  console.log('%c[Tetris Neon v3.0] Premium Cinematic Redesign + Ultra-Fluid Launch activés !', 'color:#00f9ff');
 }
 
 init();
