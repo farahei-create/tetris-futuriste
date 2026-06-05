@@ -159,7 +159,16 @@
       pinkLight.position.set(0, -60, 280);
       scene.add(pinkLight);
 
-      // Spawn 11 tetrominoes reliably with simple loop
+      window.addEventListener('resize', () => {
+        if (!container || !renderer || !camera) return;
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+      });
+
+      animate();
+
+      // Spawn 11 tetrominoes reliably
       setTimeout(() => {
         for (let i = 0; i < 11; i++) {
           setTimeout(() => {
@@ -176,15 +185,6 @@
           }, i * 220);
         }
       }, 150);
-
-      window.addEventListener('resize', () => {
-        if (!container || !renderer || !camera) return;
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-      });
-
-      animate();
     }
 
     function create3DTetromino(type, color, x, y, z) {
@@ -234,6 +234,35 @@
 
       return group;
     }
+
+    // Global click handler for explosion
+    document.addEventListener('click', (e) => {
+      if (!isThreeActive || !renderer) return;
+
+      const threeContainer = document.getElementById('three-container');
+      if (!threeContainer) return;
+
+      const rect = threeContainer.getBoundingClientRect();
+      if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
+
+      const mouse = new THREE.Vector2();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      const ray = new THREE.Raycaster();
+      ray.setFromCamera(mouse, camera);
+
+      for (let i = tetrominoMeshes.length - 1; i >= 0; i--) {
+        const obj = tetrominoMeshes[i];
+        if (!obj || !obj.parent || obj.userData?.exploded) continue;
+
+        const hits = ray.intersectObjects(obj.children, true);
+        if (hits.length > 0) {
+          explodeTetromino(obj);
+          break;
+        }
+      }
+    });
 
     function explodeTetromino(group) {
       if (group.userData.exploded) return;
