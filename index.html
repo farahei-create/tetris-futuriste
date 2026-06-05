@@ -113,10 +113,7 @@
 
     function initThreeJS() {
       const container = document.getElementById('three-container');
-      if (!container) {
-        console.error('Three container not found');
-        return;
-      }
+      if (!container) return;
 
       renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
@@ -139,7 +136,7 @@
       pinkLight.position.set(60, -60, 220);
       scene.add(pinkLight);
 
-      // Global click handler
+      // Simple global click
       renderer.domElement.addEventListener('click', (e) => {
         if (!isThreeActive) return;
 
@@ -163,10 +160,23 @@
         }
       });
 
-      // Spawn tetrominoes reliably
+      // Spawn 11 tetrominoes reliably
       setTimeout(() => {
-        spawnTetrominoesReliably();
-      }, 180);
+        for (let i = 0; i < 11; i++) {
+          setTimeout(() => {
+            const types = ['I','T','L','J','O','S','Z'];
+            const colors = [0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff];
+
+            const type = types[Math.floor(Math.random() * types.length)];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const x = (Math.random() - 0.5) * 380;
+            const y = (Math.random() - 0.5) * 280 - 10;
+            const z = -400 - Math.random() * 140;
+
+            create3DTetromino(type, color, x, y, z);
+          }, i * 220);
+        }
+      }, 150);
 
       window.addEventListener('resize', () => {
         if (renderer && camera) {
@@ -246,34 +256,6 @@
         scene.add(p);
         tetrominoMeshes.push(p);
       }
-    }
-
-    function spawnTetrominoesReliably() {
-      const types = ['I','T','L','J','O','S','Z'];
-      const colors = [0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff];
-
-      let count = 0;
-      const total = 9;
-
-      function spawnOne() {
-        if (count >= total) return;
-
-        const overlay = document.getElementById('start-overlay');
-        if (!overlay || !overlay.classList.contains('active')) return;
-
-        const type = types[Math.floor(Math.random() * types.length)];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        const x = (Math.random() - 0.5) * 380;
-        const y = (Math.random() - 0.5) * 280 - 10;
-        const z = -400 - Math.random() * 140;
-
-        create3DTetromino(type, color, x, y, z);
-        count++;
-
-        setTimeout(spawnOne, 260);
-      }
-
-      spawnOne();
     }
 
     function animate() {
@@ -383,7 +365,7 @@
     window.onload = function() {
       setTimeout(() => {
         initThreeJS();
-      }, 50);
+      }, 40);
     };
   </script>
 </body>
