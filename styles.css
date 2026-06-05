@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE - v3.5: Smaller HOLD/Next + Better Centering === */
+/* === TETRIS NÉON FUTURISTE - Full working version with new welcome background === */
 
 body {
   background: #020208;
@@ -108,7 +108,7 @@ h1:hover {
   display: block;
 }
 
-/* HOLD Panel - smaller and cleaner */
+/* HOLD Panel */
 .hold-panel {
   position: absolute;
   top: 95px;
@@ -239,7 +239,7 @@ h1:hover {
   box-shadow: 0 0 32px #00f9ff;
 }
 
-/* PAGE D'ACCUEIL - More cinematic */
+/* Overlays */
 .start-overlay {
   position: absolute;
   top: 0;
@@ -314,7 +314,6 @@ h1:hover {
   transform: scale(1.02);
 }
 
-/* PAUSE & SETTINGS - Centered in middle of screen */
 .pause-overlay, .settings-overlay, .game-over-overlay {
   position: fixed;
   top: 50%;
@@ -394,10 +393,6 @@ h1:hover {
   accent-color: #00f9ff;
 }
 
-.game-over-overlay, .pause-overlay {
-  background: rgba(3, 2, 10, 0.96);
-}
-
 /* MOBILE */
 @media (max-width: 480px) {
   .hold-panel {
@@ -435,7 +430,7 @@ h1:hover {
   }
 }
 
-/* === ULTRA FLUID & LONGER 3D FUTURISTIC LAUNCH (v3) === */
+/* 3D Launch + Playing styles */
 .game-wrapper.launching {
   position: fixed !important;
   top: 0;
@@ -468,7 +463,6 @@ h1:hover {
   transition: all 2.2s ease;
 }
 
-/* Extended cinematic neon energy burst */
 .game-wrapper.launching::before {
   content: '';
   position: absolute;
@@ -487,15 +481,13 @@ h1:hover {
   100% { opacity: 0; transform: scale(2.1); }
 }
 
-/* === PERMANENT 3D HOLOGRAPHIC GAMEPLAY VIEW (like end of transition) === */
 .game-wrapper.playing-3d {
   transform: perspective(1400px) rotateX(7deg) !important;
   transition: transform 0.9s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /* ============================================
-   FUTURISTIC EXPLODING TETRIS WELCOME BACKGROUND
-   (Inspired by 3D neon explosion scene)
+   NEW: FUTURISTIC EXPLODING TETRIS WELCOME BACKGROUND
    ============================================ */
 .start-overlay.active {
   background: 
@@ -506,7 +498,6 @@ h1:hover {
   overflow: hidden;
 }
 
-/* Animated cyberpunk grid */
 .start-overlay.active::before {
   content: '';
   position: absolute;
@@ -525,7 +516,6 @@ h1:hover {
   to { background-position: 55px 55px; }
 }
 
-/* Floating & exploding neon tetromino blocks (CSS only) */
 .start-overlay.active .tetromino {
   position: absolute;
   width: 22px;
@@ -548,25 +538,12 @@ h1:hover {
 .start-overlay.active .tetromino:nth-child(5) { top: 42%; left: 8%; animation-delay: 5.5s; border-color: #ff00aa; }
 
 @keyframes explodeFloat {
-  0%, 100% { 
-    transform: translateY(0) scale(1) rotate(0deg); 
-    opacity: 0.85; 
-  }
-  25% { 
-    transform: translateY(-18px) scale(1.15) rotate(12deg); 
-    opacity: 1; 
-  }
-  50% { 
-    transform: translateY(12px) scale(0.9) rotate(-8deg); 
-    opacity: 0.7; 
-  }
-  75% { 
-    transform: translateY(-8px) scale(1.08) rotate(6deg); 
-    opacity: 0.95; 
-  }
+  0%, 100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.85; }
+  25% { transform: translateY(-18px) scale(1.15) rotate(12deg); opacity: 1; }
+  50% { transform: translateY(12px) scale(0.9) rotate(-8deg); opacity: 0.7; }
+  75% { transform: translateY(-8px) scale(1.08) rotate(6deg); opacity: 0.95; }
 }
 
-/* Subtle explosion particles */
 .start-overlay.active::after {
   content: '';
   position: absolute;
@@ -586,4 +563,3 @@ h1:hover {
   0% { background-position: 30% 40%, 65% 70%; }
   50% { background-position: 38% 52%, 72% 62%; }
   100% { background-position: 30% 40%, 65% 70%; }
-}
