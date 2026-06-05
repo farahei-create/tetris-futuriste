@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE - v3.3: Centered Pause Menu + Title Click Pause === */
+/* === TETRIS NÉON FUTURISTE - v3.4: Smaller HOLD + Centered Instructions === */
 
 body {
   background: #020208;
@@ -135,26 +135,26 @@ h1:hover {
 }
 
 .hold-btn {
-  width: 68px !important;
-  height: 34px !important;
-  font-size: 0.72rem !important;
-  font-weight: 800;
-  border-radius: 10px;
+  width: 52px !important;
+  height: 26px !important;
+  font-size: 0.62rem !important;
+  font-weight: 700;
+  border-radius: 8px;
   background: rgba(8, 5, 18, 0.85);
   color: #00f9ff;
   border: 2px solid #00f9ff;
-  box-shadow: 0 0 18px #00f9ff;
+  box-shadow: 0 0 14px #00f9ff;
   cursor: pointer;
   transition: all 0.15s ease;
   touch-action: manipulation;
   backdrop-filter: blur(8px);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 .hold-btn:active {
   background: #00f9ff;
   color: #020208;
-  box-shadow: 0 0 30px #00f9ff;
+  box-shadow: 0 0 24px #00f9ff;
   transform: scale(0.94);
 }
 
@@ -398,6 +398,11 @@ h1:hover {
   .hold-panel {
     left: 6px;
     top: 85px;
+  }
+  .hold-btn {
+    width: 48px !important;
+    height: 24px !important;
+    font-size: 0.58rem !important;
   }
   .control-btn {
     width: 58px;
