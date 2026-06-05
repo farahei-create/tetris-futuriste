@@ -53,12 +53,7 @@
 
       <!-- WELCOME SCREEN -->
       <div id="start-overlay" class="start-overlay active">
-        <div class="tetromino"></div>
-        <div class="tetromino"></div>
-        <div class="tetromino"></div>
-        <div class="tetromino"></div>
-        <div class="tetromino"></div>
-
+        <!-- Tetrominoes will be added dynamically by JS for better control -->
         <div class="overlay-content">
           <h2>BIENVENUE DANS LE FUTUR</h2>
           <p>Prêt à empiler des blocs néon ?</p>
@@ -112,16 +107,108 @@
 
   <script src="script.js"></script>
   <script>
+    // Create proper 3D clickable tetrominoes
+    function createTetrominoes() {
+      const overlay = document.getElementById('start-overlay');
+      const shapes = ['i-shape', 't-shape', 'l-shape', 'j-shape', 'o-shape', 's-shape', 'z-shape'];
+      const colors = ['#00f9ff', '#ff00aa', '#c084fc', '#00f9ff', '#ff00aa', '#c084fc', '#00f9ff'];
+
+      shapes.forEach((shape, index) => {
+        const tetro = document.createElement('div');
+        tetro.className = `tetromino ${shape}`;
+        tetro.style.color = colors[index];
+
+        // Create 4 blocks for each tetromino
+        for (let i = 0; i < 4; i++) {
+          const block = document.createElement('div');
+          block.className = 'block';
+          tetro.appendChild(block);
+        }
+
+        // Click to explode individually
+        tetro.addEventListener('click', () => {
+          if (!tetro.classList.contains('exploding')) {
+            tetro.classList.add('exploding');
+            playExplosionSound();
+            setTimeout(() => {
+              if (tetro.parentNode) tetro.parentNode.removeChild(tetro);
+            }, 600);
+          }
+        });
+
+        overlay.appendChild(tetro);
+      });
+    }
+
+    // Simple explosion sound using Web Audio API
+    function playExplosionSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.value = 80;
+        filter.type = 'lowpass';
+        filter.frequency.value = 800;
+
+        gain.gain.value = 0.6;
+
+        const noise = audioCtx.createBufferSource();
+        const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.8, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        noise.buffer = buffer;
+
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.value = 0.4;
+
+        const noiseFilter = audioCtx.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.value = 1200;
+
+        oscillator.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        noise.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(audioCtx.destination);
+
+        oscillator.start();
+        noise.start();
+
+        setTimeout(() => {
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
+          noiseGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
+        }, 100);
+
+        setTimeout(() => {
+          oscillator.stop();
+          noise.stop();
+        }, 900);
+      } catch(e) {}
+    }
+
     function launchGameWithEffect() {
       const overlay = document.getElementById('start-overlay');
-      overlay.classList.add('rushing');
+      overlay.classList.add('rushing', 'glitching');
 
-      // After the rush & explode animation, start the game
+      playExplosionSound();
+
       setTimeout(() => {
-        overlay.classList.remove('active', 'rushing');
+        overlay.classList.remove('active', 'rushing', 'glitching');
         startGame();
-      }, 850);
+      }, 900);
     }
+
+    // Initialize everything when page loads
+    window.onload = function() {
+      createTetrominoes();
+    };
   </script>
 </body>
 </html>
