@@ -14,10 +14,15 @@
       height: 100%;
       z-index: 2;
       pointer-events: auto;
+      transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
     }
     .overlay-content {
       z-index: 10;
       position: relative;
+    }
+    .start-overlay.rushing #three-container {
+      opacity: 0;
+      transform: scale(1.15);
     }
   </style>
 </head>
@@ -143,7 +148,6 @@
       camera = new THREE.PerspectiveCamera(55, container.clientWidth / container.clientHeight, 0.1, 2000);
       camera.position.set(0, 0, 420);
 
-      // Soft ambient + point light for neon feel
       const ambient = new THREE.AmbientLight(0x112233, 0.6);
       scene.add(ambient);
 
@@ -155,12 +159,10 @@
       pinkLight.position.set(0, -60, 280);
       scene.add(pinkLight);
 
-      // Start spawning 3D tetrominoes
       setTimeout(() => {
         if (isThreeActive) spawnRandomTetrominoes();
       }, 400);
 
-      // Handle resize
       window.addEventListener('resize', () => {
         if (!container || !renderer || !camera) return;
         renderer.setSize(container.clientWidth, container.clientHeight);
@@ -178,8 +180,7 @@
       const material = new THREE.MeshPhongMaterial({
         color: color,
         shininess: 35,
-        specular: 0x222222,
-        flatShading: false
+        specular: 0x222222
       });
 
       const blockSize = 22;
@@ -211,29 +212,28 @@
         (Math.random() - 0.5) * 0.6
       );
 
-      // Gentle floating + self rotation
       group.userData.floatSpeed = 0.8 + Math.random() * 0.6;
       group.userData.rotSpeed = 0.4 + Math.random() * 0.8;
 
       scene.add(group);
       tetrominoMeshes.push(group);
 
-      // Click interaction
-      const raycaster = new THREE.Raycaster();
-      const mouse = new THREE.Vector2();
-
-      renderer.domElement.addEventListener('click', (event) => {
+      // Click to explode
+      renderer.domElement.addEventListener('click', function onClick(event) {
         if (!isThreeActive || group.userData.exploded) return;
 
         const rect = renderer.domElement.getBoundingClientRect();
+        const mouse = new THREE.Vector2();
         mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
+        const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(mouse, camera);
         const intersects = raycaster.intersectObjects(group.children, true);
 
         if (intersects.length > 0) {
           explodeTetromino(group);
+          renderer.domElement.removeEventListener('click', onClick);
         }
       });
 
@@ -249,12 +249,10 @@
       const worldPos = new THREE.Vector3();
       group.getWorldPosition(worldPos);
 
-      // Remove original
       scene.remove(group);
       const index = tetrominoMeshes.indexOf(group);
       if (index > -1) tetrominoMeshes.splice(index, 1);
 
-      // Create flying particle blocks
       const particleMat = new THREE.MeshPhongMaterial({
         color: group.children[0].material.color,
         shininess: 20
@@ -269,17 +267,15 @@
         p.position.x += (Math.random() - 0.5) * 30;
         p.position.y += (Math.random() - 0.5) * 30;
 
-        const vel = new THREE.Vector3(
-          (Math.random() - 0.5) * 4.5,
-          (Math.random() - 0.5) * 4.5 + 1.8,
-          (Math.random() - 0.5) * 3
+        p.userData.velocity = new THREE.Vector3(
+          (Math.random() - 0.5) * 4.8,
+          (Math.random() - 0.5) * 4.8 + 2,
+          (Math.random() - 0.5) * 3.5
         );
-
-        p.userData.velocity = vel;
-        p.userData.life = 65 + Math.random() * 35;
+        p.userData.life = 60 + Math.random() * 40;
 
         scene.add(p);
-        tetrominoMeshes.push(p); // reuse array for cleanup
+        tetrominoMeshes.push(p);
       }
     }
 
@@ -301,7 +297,7 @@
 
         const x = (Math.random() - 0.5) * 380;
         const y = (Math.random() - 0.5) * 280 - 40;
-        const z = -380 - Math.random() * 320; // far away
+        const z = -420 - Math.random() * 280;
 
         create3DTetromino(type, color, x, y, z);
         spawned++;
@@ -321,25 +317,22 @@
       tetrominoMeshes.forEach((obj, i) => {
         if (!obj || !obj.parent) return;
 
-        // Self rotation + floating
         if (obj.userData.rotSpeed) {
           obj.rotation.y += obj.userData.rotSpeed * 0.012;
-          obj.rotation.x = Math.sin(Date.now() * 0.0008 + i) * 0.25;
+          obj.rotation.x = Math.sin(Date.now() * 0.0008 + i) * 0.22;
         }
 
         if (obj.userData.floatSpeed) {
-          obj.position.y += Math.sin(Date.now() * 0.0015 + i) * 0.12;
+          obj.position.y += Math.sin(Date.now() * 0.0014 + i) * 0.1;
         }
 
-        // Gentle move toward camera
-        if (obj.position.z < 180) {
-          obj.position.z += 1.8;
+        if (obj.position.z < 160) {
+          obj.position.z += 2.1;
         }
 
-        // Simple particle physics for exploded pieces
         if (obj.userData.velocity) {
           obj.position.add(obj.userData.velocity);
-          obj.userData.velocity.y -= 0.085; // gravity
+          obj.userData.velocity.y -= 0.09;
           obj.userData.life--;
 
           if (obj.userData.life <= 0) {
@@ -355,26 +348,28 @@
 
     function launchGameWithEffect() {
       const overlay = document.getElementById('start-overlay');
+      const threeContainer = document.getElementById('three-container');
+
       overlay.classList.add('rushing', 'glitching');
       isThreeActive = false;
 
-      // Explode everything
+      // Explode all remaining 3D tetrominoes
       tetrominoMeshes.forEach(obj => {
         if (obj && obj.parent && !obj.userData.exploded) {
           const color = obj.children?.[0]?.material?.color?.getHex() || 0x00f9ff;
-          // Simple particle burst
-          for (let k = 0; k < 10; k++) {
-            const size = 5 + Math.random() * 6;
+
+          for (let k = 0; k < 11; k++) {
+            const size = 5 + Math.random() * 7;
             const geo = new THREE.BoxGeometry(size, size, size);
             const mat = new THREE.MeshPhongMaterial({ color });
             const p = new THREE.Mesh(geo, mat);
             p.position.copy(obj.position);
             p.userData.velocity = new THREE.Vector3(
-              (Math.random() - 0.5) * 5,
-              (Math.random() - 0.5) * 5 + 2,
+              (Math.random() - 0.5) * 5.5,
+              (Math.random() - 0.5) * 5.5 + 2.2,
               (Math.random() - 0.5) * 4
             );
-            p.userData.life = 50 + Math.random() * 30;
+            p.userData.life = 55 + Math.random() * 35;
             scene.add(p);
             tetrominoMeshes.push(p);
           }
@@ -385,10 +380,25 @@
 
       playExplosionSound();
 
+      // Smooth fade out of the 3D scene
+      if (threeContainer) {
+        threeContainer.style.transition = 'opacity 0.45s ease, transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
+        threeContainer.style.opacity = '0';
+        threeContainer.style.transform = 'scale(1.12)';
+      }
+
       setTimeout(() => {
         overlay.classList.remove('active', 'rushing', 'glitching');
+
+        // Clean up Three.js
+        if (renderer) {
+          renderer.dispose();
+          const container = document.getElementById('three-container');
+          if (container) container.innerHTML = '';
+        }
+
         startGame();
-      }, 1000);
+      }, 1050);
     }
 
     function playExplosionSound() {
@@ -397,23 +407,22 @@
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.value = 55;
-        gain.gain.value = 0.6;
+        osc.frequency.value = 52;
+        gain.gain.value = 0.65;
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
         setTimeout(() => {
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
-          setTimeout(() => osc.stop(), 800);
-        }, 40);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.75);
+          setTimeout(() => osc.stop(), 850);
+        }, 35);
       } catch(e) {}
     }
 
-    // Boot Three.js when page loads
     window.onload = function() {
       setTimeout(() => {
         initThreeJS();
-      }, 150);
+      }, 120);
     };
   </script>
 </body>
