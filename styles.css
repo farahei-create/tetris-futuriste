@@ -263,6 +263,8 @@ h1:hover {
 .overlay-content {
   text-align: center;
   padding: 24px;
+  z-index: 3;
+  position: relative;
 }
 
 .overlay-content h2 {
@@ -489,4 +491,99 @@ h1:hover {
 .game-wrapper.playing-3d {
   transform: perspective(1400px) rotateX(7deg) !important;
   transition: transform 0.9s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* ============================================
+   FUTURISTIC EXPLODING TETRIS WELCOME BACKGROUND
+   (Inspired by 3D neon explosion scene)
+   ============================================ */
+.start-overlay.active {
+  background: 
+    radial-gradient(circle at 25% 30%, rgba(0, 249, 255, 0.18) 0%, transparent 55%),
+    radial-gradient(circle at 75% 70%, rgba(255, 0, 170, 0.15) 0%, transparent 60%),
+    #020208;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated cyberpunk grid */
+.start-overlay.active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(0,249,255,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,249,255,0.07) 1px, transparent 1px);
+  background-size: 55px 55px;
+  animation: gridDrift 25s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes gridDrift {
+  from { background-position: 0 0; }
+  to { background-position: 55px 55px; }
+}
+
+/* Floating & exploding neon tetromino blocks (CSS only) */
+.start-overlay.active .tetromino {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #00f9ff;
+  box-shadow: 
+    0 0 12px #00f9ff,
+    0 0 24px rgba(0, 249, 255, 0.6),
+    inset 0 0 6px rgba(255,255,255,0.4);
+  animation: explodeFloat 7s ease-in-out infinite;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.start-overlay.active .tetromino:nth-child(1) { top: 18%; left: 12%; animation-delay: 0s; border-color: #00f9ff; }
+.start-overlay.active .tetromino:nth-child(2) { top: 25%; right: 15%; animation-delay: 1.2s; width: 18px; height: 36px; border-color: #ff00aa; }
+.start-overlay.active .tetromino:nth-child(3) { bottom: 22%; left: 18%; animation-delay: 2.8s; border-color: #c084fc; }
+.start-overlay.active .tetromino:nth-child(4) { bottom: 15%; right: 20%; animation-delay: 4.1s; width: 36px; height: 18px; border-color: #00f9ff; }
+.start-overlay.active .tetromino:nth-child(5) { top: 42%; left: 8%; animation-delay: 5.5s; border-color: #ff00aa; }
+
+@keyframes explodeFloat {
+  0%, 100% { 
+    transform: translateY(0) scale(1) rotate(0deg); 
+    opacity: 0.85; 
+  }
+  25% { 
+    transform: translateY(-18px) scale(1.15) rotate(12deg); 
+    opacity: 1; 
+  }
+  50% { 
+    transform: translateY(12px) scale(0.9) rotate(-8deg); 
+    opacity: 0.7; 
+  }
+  75% { 
+    transform: translateY(-8px) scale(1.08) rotate(6deg); 
+    opacity: 0.95; 
+  }
+}
+
+/* Subtle explosion particles */
+.start-overlay.active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle, rgba(0,249,255,0.9) 1px, transparent 2px),
+    radial-gradient(circle, rgba(255,0,170,0.85) 1px, transparent 2px);
+  background-size: 180px 180px, 220px 220px;
+  background-position: 30% 40%, 65% 70%;
+  animation: particleExplosion 18s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.6;
+}
+
+@keyframes particleExplosion {
+  0% { background-position: 30% 40%, 65% 70%; }
+  50% { background-position: 38% 52%, 72% 62%; }
+  100% { background-position: 30% 40%, 65% 70%; }
 }
