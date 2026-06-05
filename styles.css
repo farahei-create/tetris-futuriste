@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE - Full working version with new welcome background === */
+/* === TETRIS NÉON FUTURISTE - Fixed version (game board visible + new welcome background) === */
 
 body {
   background: #020208;
@@ -60,6 +60,7 @@ h1:hover {
   display: block;
   width: 100%;
   height: auto;
+  max-height: 640px;
 }
 
 .floating-hud {
@@ -108,7 +109,6 @@ h1:hover {
   display: block;
 }
 
-/* HOLD Panel */
 .hold-panel {
   position: absolute;
   top: 95px;
@@ -161,7 +161,6 @@ h1:hover {
   transform: scale(0.94);
 }
 
-/* CONTROLS */
 .controls-overlay {
   position: absolute;
   bottom: 55px;
@@ -239,7 +238,6 @@ h1:hover {
   box-shadow: 0 0 32px #00f9ff;
 }
 
-/* Overlays */
 .start-overlay {
   position: absolute;
   top: 0;
@@ -393,7 +391,6 @@ h1:hover {
   accent-color: #00f9ff;
 }
 
-/* MOBILE */
 @media (max-width: 480px) {
   .hold-panel {
     left: 6px;
@@ -430,7 +427,6 @@ h1:hover {
   }
 }
 
-/* 3D Launch + Playing styles */
 .game-wrapper.launching {
   position: fixed !important;
   top: 0;
@@ -486,9 +482,7 @@ h1:hover {
   transition: transform 0.9s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* ============================================
-   NEW: FUTURISTIC EXPLODING TETRIS WELCOME BACKGROUND
-   ============================================ */
+/* NEW FUTURISTIC EXPLODING TETRIS WELCOME BACKGROUND */
 .start-overlay.active {
   background: 
     radial-gradient(circle at 25% 30%, rgba(0, 249, 255, 0.18) 0%, transparent 55%),
