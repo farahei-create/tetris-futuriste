@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE v3.2 - Pause Menu + Configurations === */
+/* === TETRIS NÉON FUTURISTE v3.3 - Centered Pause Menu + Title Click to Pause === */
 
 let BLOCK_SIZE = 28;
 const COLS = 10;
@@ -95,7 +95,6 @@ function loadSettings() {
   const saved3D = localStorage.getItem('tetrisView3DEnabled');
   if (saved3D !== null) view3DEnabled = saved3D === 'true';
 
-  // Apply initial settings
   const soundToggle = document.getElementById('sound-toggle');
   if (soundToggle) soundToggle.checked = soundEnabled;
 
@@ -117,14 +116,12 @@ function saveSettings() {
 function applySettings() {
   const wrapper = document.querySelector('.game-wrapper');
 
-  // 3D View
   if (view3DEnabled && isFullscreenMode) {
     wrapper.classList.add('playing-3d');
   } else {
     wrapper.classList.remove('playing-3d');
   }
 
-  // Controls visibility
   if (alwaysShowControls && !paused && !gameOver) {
     showControls();
     clearTimeout(hideControlsTimer);
@@ -157,6 +154,12 @@ function updateSetting(setting, value) {
   }
   saveSettings();
   applySettings();
+}
+
+function pauseFromHeader() {
+  if (!startOverlay.classList.contains('active') && !gameOver && !paused) {
+    togglePause();
+  }
 }
 
 function showControls() {
@@ -948,7 +951,6 @@ function init() {
   loadBestScore();
   loadSettings();
 
-  // Wire up settings toggles
   const soundToggle = document.getElementById('sound-toggle');
   if (soundToggle) {
     soundToggle.addEventListener('change', (e) => updateSetting('sound', e.target.checked));
@@ -993,7 +995,7 @@ function init() {
     if (!gameOver && !paused && controlsOverlay) hideControls();
   }, 1900);
 
-  console.log('%c[Tetris Neon v3.2] Pause Menu + Configurations activés !', 'color:#00f9ff');
+  console.log('%c[Tetris Neon v3.3] Centered Pause Menu + Title Click Pause activés !', 'color:#00f9ff');
 }
 
 init();
