@@ -329,6 +329,25 @@
           obj.position.z += 2.1;
         }
 
+        // Simple repulsion between tetrominoes (they push each other)
+        tetrominoMeshes.forEach(other => {
+          if (other === obj || !other.parent || other.userData?.exploded) return;
+
+          const dx = obj.position.x - other.position.x;
+          const dy = obj.position.y - other.position.y;
+          const dz = obj.position.z - other.position.z;
+          const distSq = dx*dx + dy*dy + dz*dz;
+
+          if (distSq > 0.1 && distSq < 4200) { // ~65 units
+            const dist = Math.sqrt(distSq);
+            const force = (65 - dist) * 0.028;
+
+            obj.position.x += (dx / dist) * force;
+            obj.position.y += (dy / dist) * force;
+            obj.position.z += (dz / dist) * force * 0.5;
+          }
+        });
+
         if (obj.userData.velocity) {
           obj.position.add(obj.userData.velocity);
           obj.userData.velocity.y -= 0.09;
