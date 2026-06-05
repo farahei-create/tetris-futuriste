@@ -17,7 +17,6 @@
       <div class="holo-frame"></div>
       <canvas id="board" width="320" height="640"></canvas>
 
-      <!-- HOLD Panel (left side) -->
       <div class="hold-panel">
         <div class="hud-item">
           <div class="hud-label">HOLD</div>
@@ -26,7 +25,6 @@
         <button id="hold-btn" onclick="holdPiece()" class="control-btn hold-btn">HOLD</button>
       </div>
 
-      <!-- HUD -->
       <div class="floating-hud">
         <div class="hud-panel left">
           <div class="hud-item"><div class="hud-label">SCORE</div><div id="score">000000</div></div>
@@ -42,7 +40,6 @@
         </div>
       </div>
 
-      <!-- Controls - Auto-hide quand inactif + nouvelle disposition -->
       <div id="controls-overlay" class="controls-overlay">
         <div class="controls-main">
           <button class="control-btn" onclick="moveLeft()" aria-label="Gauche">←</button>
@@ -54,9 +51,8 @@
         </div>
       </div>
 
-      <!-- Overlays -->
+      <!-- WELCOME SCREEN -->
       <div id="start-overlay" class="start-overlay active">
-        <!-- Floating exploding neon tetrominoes (CSS animated) -->
         <div class="tetromino"></div>
         <div class="tetromino"></div>
         <div class="tetromino"></div>
@@ -67,7 +63,7 @@
           <h2>BIENVENUE DANS LE FUTUR</h2>
           <p>Prêt à empiler des blocs néon ?</p>
           <div id="best-score">Record : 000000</div>
-          <button onclick="startGame()">LANCER LE JEU</button>
+          <button onclick="launchGameWithEffect()">LANCER LE JEU</button>
         </div>
       </div>
 
@@ -90,7 +86,6 @@
         </div>
       </div>
 
-      <!-- Settings / Configurations Menu -->
       <div id="settings-overlay" class="settings-overlay">
         <div class="overlay-content">
           <h2>CONFIGURATIONS</h2>
@@ -116,5 +111,17 @@
   </div>
 
   <script src="script.js"></script>
+  <script>
+    function launchGameWithEffect() {
+      const overlay = document.getElementById('start-overlay');
+      overlay.classList.add('rushing');
+
+      // After the rush & explode animation, start the game
+      setTimeout(() => {
+        overlay.classList.remove('active', 'rushing');
+        startGame();
+      }, 850);
+    }
+  </script>
 </body>
 </html>
