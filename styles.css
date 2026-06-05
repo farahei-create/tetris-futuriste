@@ -260,3 +260,59 @@ h1 {
     padding: 0 16px;
   }
 }
+
+/* === FUTURISTIC 3D FULLSCREEN LAUNCH TRANSITION (v2.3) === */
+.game-wrapper {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.game-wrapper.launching {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  z-index: 100;
+  transition: all 1.4s cubic-bezier(0.23, 1, 0.32, 1);
+  transform: perspective(1200px) rotateX(12deg) scale(0.82) translateZ(-80px);
+  box-shadow: 
+    0 0 60px #00f9ff,
+    0 0 120px #ff00aa,
+    0 0 200px rgba(157, 78, 221, 0.6),
+    inset 0 0 80px rgba(0, 249, 255, 0.3);
+  border-radius: 0;
+}
+
+.game-wrapper.launching #board {
+  box-shadow: 
+    0 0 40px #00f9ff,
+    0 0 80px #ff00aa,
+    0 0 160px rgba(0, 249, 255, 0.5);
+  transition: box-shadow 1.4s ease;
+}
+
+.game-wrapper.launching .holo-frame {
+  box-shadow: 0 0 100px #00f9ff, 0 0 200px #ff00aa;
+  transition: all 1.4s ease;
+}
+
+/* Neon energy burst during launch */
+.game-wrapper.launching::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle, rgba(0,249,255,0.18) 0%, transparent 70%);
+  opacity: 0;
+  animation: neonBurst 1.4s ease forwards;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes neonBurst {
+  0% { opacity: 0; transform: scale(0.5); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.9); }
+}

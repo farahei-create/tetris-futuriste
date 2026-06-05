@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE v2.2 - Auto-hide controls + Layout fix === */
+/* === TETRIS NÉON FUTURISTE v2.3 - Dramatic 3D Fullscreen Launch Transition === */
 
 let BLOCK_SIZE = 28;
 const COLS = 10;
@@ -36,6 +36,7 @@ let particles = [];
 let backgroundBubbles = [];
 let animationFrame = null;
 let glitchIntensity = 0;
+let isFullscreenMode = false;
 
 let touchStartX = 0;
 let touchStartY = 0;
@@ -134,17 +135,24 @@ function drawBackgroundBubbles() {
 }
 
 function resizeGame() {
-  const availableWidth = Math.min(window.innerWidth * 0.96, 400);
-  const availableHeight = Math.min(window.innerHeight * 0.68, 620);
+  let availableWidth = Math.min(window.innerWidth * 0.96, 400);
+  let availableHeight = Math.min(window.innerHeight * 0.68, 620);
+
+  if (isFullscreenMode) {
+    availableWidth = window.innerWidth * 0.98;
+    availableHeight = window.innerHeight * 0.94;
+  }
+
   const sizeByWidth = Math.floor(availableWidth / COLS);
   const sizeByHeight = Math.floor(availableHeight / ROWS);
   BLOCK_SIZE = Math.min(sizeByWidth, sizeByHeight);
-  if (BLOCK_SIZE > 34) BLOCK_SIZE = 34;
+  if (BLOCK_SIZE > 42) BLOCK_SIZE = 42; // allow bigger in fullscreen
   if (BLOCK_SIZE < 24) BLOCK_SIZE = 24;
+
   canvas.width = COLS * BLOCK_SIZE;
   canvas.height = ROWS * BLOCK_SIZE;
 
-  const nextSize = Math.min(100, BLOCK_SIZE * 3.8 + 6);
+  const nextSize = Math.min(110, BLOCK_SIZE * 3.8 + 6);
   if (nextCanvas) {
     nextCanvas.width = nextSize;
     nextCanvas.height = nextSize;
@@ -605,7 +613,6 @@ function playSound(type) {
   const now = audioCtx.currentTime;
 
   if (type === 'clear') {
-    // ... (même code que avant, inchangé)
     const noise = audioCtx.createBufferSource();
     const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.52, audioCtx.sampleRate);
     const data = noiseBuffer.getChannelData(0);
@@ -722,7 +729,6 @@ function handleTouchStart(e) {
   touchStartY = e.touches[0].clientY - rect.top;
   touchStartTime = Date.now();
 
-  // Afficher les boutons au toucher
   showControls();
   scheduleHideControls();
 }
@@ -784,12 +790,33 @@ function handleKeyboard(e) {
 
 function startGame() {
   initAudio();
+  const wrapper = document.querySelector('.game-wrapper');
   startOverlay.classList.remove('active');
-  resetGame();
-  lastDropTime = performance.now();
-  animationFrame = requestAnimationFrame(gameLoop);
-  showControls();
-  scheduleHideControls();
+
+  // === EPIC 3D FUTURISTIC LAUNCH TRANSITION ===
+  wrapper.classList.add('launching');
+
+  // Optional: real browser fullscreen for maximum immersion
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else if (wrapper.requestFullscreen) {
+    wrapper.requestFullscreen().catch(() => {});
+  }
+
+  // When the beautiful 3D transition finishes, start the actual game
+  const finalizeLaunch = () => {
+    wrapper.classList.remove('launching');
+    wrapper.removeEventListener('transitionend', finalizeLaunch);
+    isFullscreenMode = true;
+    resetGame();
+    lastDropTime = performance.now();
+    animationFrame = requestAnimationFrame(gameLoop);
+    showControls();
+    scheduleHideControls();
+    // Final resize to perfectly fill the new fullscreen
+    setTimeout(resizeGame, 60);
+  };
+  wrapper.addEventListener('transitionend', finalizeLaunch, { once: true });
 }
 
 function togglePause() {
@@ -821,6 +848,7 @@ function restartGame() {
   gameOverOverlay.classList.remove('active');
   pauseOverlay.classList.remove('active');
   startOverlay.classList.remove('active');
+  isFullscreenMode = false; // reset on restart
   resetGame();
   lastDropTime = performance.now();
   animationFrame = requestAnimationFrame(gameLoop);
@@ -847,7 +875,6 @@ function init() {
   canvas.addEventListener('touchend', handleTouchEnd, { passive: true });
   document.addEventListener('gesturestart', e => e.preventDefault());
 
-  // Clic sur les boutons = reset timer
   document.querySelectorAll('.control-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       showControls();
@@ -858,12 +885,11 @@ function init() {
   ctx.fillStyle = '#12071f';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Cacher les boutons au démarrage
   setTimeout(() => {
     if (!gameOver && !paused && controlsOverlay) hideControls();
   }, 1800);
 
-  console.log('%c[Tetris Neon v2.2] Auto-hide controls + nouvelle disposition activés !', 'color:#00f9ff');
+  console.log('%c[Tetris Neon v2.3] 3D Futuristic Fullscreen Launch Transition activé !', 'color:#00f9ff');
 }
 
 init();
