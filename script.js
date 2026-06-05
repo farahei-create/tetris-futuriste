@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE v3.3 - Centered Pause Menu + Title Click to Pause === */
+/* === TETRIS NÉON FUTURISTE v3.5 - Smaller panels + Better piece centering === */
 
 let BLOCK_SIZE = 28;
 const COLS = 10;
@@ -230,13 +230,14 @@ function resizeGame() {
   const sizeByWidth = Math.floor(availableWidth / COLS);
   const sizeByHeight = Math.floor(availableHeight / ROWS);
   BLOCK_SIZE = Math.min(sizeByWidth, sizeByHeight);
-  if (BLOCK_SIZE > 44) BLOCK_SIZE = 44;
+  if (BLOCK_SIZE > 42) BLOCK_SIZE = 42;
   if (BLOCK_SIZE < 24) BLOCK_SIZE = 24;
 
   canvas.width = COLS * BLOCK_SIZE;
   canvas.height = ROWS * BLOCK_SIZE;
 
-  const nextSize = Math.min(115, BLOCK_SIZE * 3.8 + 6);
+  // Smaller next/hold canvases for better proportion
+  const nextSize = Math.min(95, BLOCK_SIZE * 3.4 + 4);
   if (nextCanvas) {
     nextCanvas.width = nextSize;
     nextCanvas.height = nextSize;
@@ -306,23 +307,23 @@ function drawNextPiece() {
 
   const shape = SHAPES[nextPieceType][0];
   const color = COLORS[nextPieceType];
-  const block = Math.floor(size / 4.2);
-  const offsetX = Math.floor((size - block * 4) / 2);
-  const offsetY = Math.floor((size - block * 3) / 2);
+  const block = Math.max(6, Math.floor(size / 4.1));
+  const offsetX = Math.floor((size - block * 4) / 2) + 1;
+  const offsetY = Math.floor((size - block * 3) / 2) + 1;
 
-  nextCtx.shadowBlur = 14;
+  nextCtx.shadowBlur = 12;
   nextCtx.shadowColor = color;
   shape.forEach(([dx, dy]) => {
     const px = offsetX + dx * block;
     const py = offsetY + dy * block;
-    nextCtx.fillStyle = 'rgba(5,5,15,0.7)';
+    nextCtx.fillStyle = 'rgba(5,5,15,0.75)';
     nextCtx.fillRect(px + 1, py + 1, block - 2, block - 2);
     nextCtx.strokeStyle = color;
-    nextCtx.lineWidth = 2.8;
+    nextCtx.lineWidth = 2.5;
     nextCtx.strokeRect(px + 1, py + 1, block - 2, block - 2);
     nextCtx.strokeStyle = '#ffffff';
-    nextCtx.lineWidth = 1.2;
-    nextCtx.strokeRect(px + 3, py + 3, block - 7, block - 7);
+    nextCtx.lineWidth = 1;
+    nextCtx.strokeRect(px + 3, py + 3, block - 6, block - 6);
   });
   nextCtx.shadowBlur = 0;
 }
@@ -337,23 +338,23 @@ function drawHoldPiece() {
 
   const shape = SHAPES[heldPiece.type][heldPiece.rotation];
   const color = COLORS[heldPiece.type];
-  const block = Math.floor(size / 4.2);
-  const offsetX = Math.floor((size - block * 4) / 2);
-  const offsetY = Math.floor((size - block * 3) / 2);
+  const block = Math.max(6, Math.floor(size / 4.1));
+  const offsetX = Math.floor((size - block * 4) / 2) + 1;
+  const offsetY = Math.floor((size - block * 3) / 2) + 1;
 
-  holdCtx.shadowBlur = 12;
+  holdCtx.shadowBlur = 10;
   holdCtx.shadowColor = color;
   shape.forEach(([dx, dy]) => {
     const px = offsetX + dx * block;
     const py = offsetY + dy * block;
-    holdCtx.fillStyle = 'rgba(5,5,15,0.7)';
+    holdCtx.fillStyle = 'rgba(5,5,15,0.75)';
     holdCtx.fillRect(px + 1, py + 1, block - 2, block - 2);
     holdCtx.strokeStyle = color;
-    holdCtx.lineWidth = 2.5;
+    holdCtx.lineWidth = 2.2;
     holdCtx.strokeRect(px + 1, py + 1, block - 2, block - 2);
     holdCtx.strokeStyle = '#ffffff';
-    holdCtx.lineWidth = 1.2;
-    holdCtx.strokeRect(px + 3, py + 3, block - 7, block - 7);
+    holdCtx.lineWidth = 1;
+    holdCtx.strokeRect(px + 3, py + 3, block - 6, block - 6);
   });
   holdCtx.shadowBlur = 0;
 }
@@ -995,7 +996,7 @@ function init() {
     if (!gameOver && !paused && controlsOverlay) hideControls();
   }, 1900);
 
-  console.log('%c[Tetris Neon v3.3] Centered Pause Menu + Title Click Pause activés !', 'color:#00f9ff');
+  console.log('%c[Tetris Neon v3.5] Smaller HOLD/Next panels + Perfect centering activés !', 'color:#00f9ff');
 }
 
 init();
