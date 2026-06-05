@@ -159,9 +159,23 @@
       pinkLight.position.set(0, -60, 280);
       scene.add(pinkLight);
 
+      // Spawn 11 tetrominoes reliably with simple loop
       setTimeout(() => {
-        if (isThreeActive) spawnRandomTetrominoes();
-      }, 400);
+        for (let i = 0; i < 11; i++) {
+          setTimeout(() => {
+            const types = ['I','T','L','J','O','S','Z'];
+            const colors = [0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff];
+
+            const type = types[Math.floor(Math.random() * types.length)];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const x = (Math.random() - 0.5) * 380;
+            const y = (Math.random() - 0.5) * 280 - 10;
+            const z = -400 - Math.random() * 140;
+
+            create3DTetromino(type, color, x, y, z);
+          }, i * 220);
+        }
+      }, 150);
 
       window.addEventListener('resize', () => {
         if (!container || !renderer || !camera) return;
@@ -218,25 +232,6 @@
       scene.add(group);
       tetrominoMeshes.push(group);
 
-      // Click to explode
-      renderer.domElement.addEventListener('click', function onClick(event) {
-        if (!isThreeActive || group.userData.exploded) return;
-
-        const rect = renderer.domElement.getBoundingClientRect();
-        const mouse = new THREE.Vector2();
-        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-        const raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(group.children, true);
-
-        if (intersects.length > 0) {
-          explodeTetromino(group);
-          renderer.domElement.removeEventListener('click', onClick);
-        }
-      });
-
       return group;
     }
 
@@ -277,31 +272,6 @@
         scene.add(p);
         tetrominoMeshes.push(p);
       }
-    }
-
-    function spawnRandomTetrominoes() {
-      const types = ['I','T','L','J','O','S','Z'];
-      const colors = [0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff];
-
-      let spawned = 0;
-
-      const interval = setInterval(() => {
-        const overlay = document.getElementById('start-overlay');
-        if (!overlay || !overlay.classList.contains('active') || spawned >= 8 || !isThreeActive) {
-          clearInterval(interval);
-          return;
-        }
-
-        const type = types[Math.floor(Math.random() * types.length)];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-
-        const x = (Math.random() - 0.5) * 380;
-        const y = (Math.random() - 0.5) * 280 - 40;
-        const z = -420 - Math.random() * 280;
-
-        create3DTetromino(type, color, x, y, z);
-        spawned++;
-      }, 380);
     }
 
     function animate() {
@@ -353,7 +323,6 @@
       overlay.classList.add('rushing', 'glitching');
       isThreeActive = false;
 
-      // Explode all remaining 3D tetrominoes
       tetrominoMeshes.forEach(obj => {
         if (obj && obj.parent && !obj.userData.exploded) {
           const color = obj.children?.[0]?.material?.color?.getHex() || 0x00f9ff;
@@ -380,7 +349,6 @@
 
       playExplosionSound();
 
-      // Smooth fade out of the 3D scene
       if (threeContainer) {
         threeContainer.style.transition = 'opacity 0.45s ease, transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
         threeContainer.style.opacity = '0';
@@ -390,7 +358,6 @@
       setTimeout(() => {
         overlay.classList.remove('active', 'rushing', 'glitching');
 
-        // Clean up Three.js
         if (renderer) {
           renderer.dispose();
           const container = document.getElementById('three-container');
