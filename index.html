@@ -6,31 +6,18 @@
   <title>TETRIS NÉON // 2084</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    .tetromino-3d {
+    #three-container {
       position: absolute;
-      transform-style: preserve-3d;
-      cursor: pointer;
-      transition: filter 0.1s;
-      filter: blur(0.3px);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: auto;
     }
-    .tetromino-3d .block {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      border: 2.5px solid #fff;
-      box-shadow: 0 0 14px currentColor, inset 0 0 8px rgba(255,255,255,0.6);
-      background: currentColor;
-      transform-style: preserve-3d;
-    }
-    .particle {
-      position: absolute;
-      width: 9px;
-      height: 9px;
-      border-radius: 2px;
-      box-shadow: 0 0 10px currentColor;
-      background: currentColor;
-      pointer-events: none;
+    .overlay-content {
       z-index: 10;
+      position: relative;
     }
   </style>
 </head>
@@ -79,8 +66,10 @@
         </div>
       </div>
 
-      <!-- WELCOME SCREEN -->
+      <!-- WELCOME SCREEN WITH THREE.JS -->
       <div id="start-overlay" class="start-overlay active">
+        <div id="three-container"></div>
+
         <div class="overlay-content">
           <h2>BIENVENUE DANS LE FUTUR</h2>
           <p>Prêt à empiler des blocs néon ?</p>
@@ -133,121 +122,176 @@
   </div>
 
   <script src="script.js"></script>
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
-    const overlay = document.getElementById('start-overlay');
-    let tetrominoes = [];
+    let scene, camera, renderer;
+    let tetrominoMeshes = [];
+    let isThreeActive = true;
 
-    function createTetrominoShape(type, color, x, y) {
-      const container = document.createElement('div');
-      container.className = 'tetromino-3d';
-      container.style.left = x + 'px';
-      container.style.top = y + 'px';
-      container.style.color = color;
+    function initThreeJS() {
+      const container = document.getElementById('three-container');
+      if (!container) return;
 
-      // Start further away in 3D space + bigger when close
-      const startZ = -650 - Math.random() * 250;
-      container.style.transform = `translateZ(${startZ}px) scale(0.35) rotateX(28deg) rotateY(${Math.random()*50-25}deg)`;
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(55, container.clientWidth / container.clientHeight, 0.1, 2000);
+      camera.position.set(0, 0, 420);
+
+      // Soft ambient + point light for neon feel
+      const ambient = new THREE.AmbientLight(0x112233, 0.6);
+      scene.add(ambient);
+
+      const pointLight = new THREE.PointLight(0x00f9ff, 1.2, 800);
+      pointLight.position.set(0, 80, 300);
+      scene.add(pointLight);
+
+      const pinkLight = new THREE.PointLight(0xff00aa, 0.9, 700);
+      pinkLight.position.set(0, -60, 280);
+      scene.add(pinkLight);
+
+      // Start spawning 3D tetrominoes
+      setTimeout(() => {
+        if (isThreeActive) spawnRandomTetrominoes();
+      }, 400);
+
+      // Handle resize
+      window.addEventListener('resize', () => {
+        if (!container || !renderer || !camera) return;
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+      });
+
+      animate();
+    }
+
+    function create3DTetromino(type, color, x, y, z) {
+      const group = new THREE.Group();
+      group.userData = { type, exploded: false };
+
+      const material = new THREE.MeshPhongMaterial({
+        color: color,
+        shininess: 35,
+        specular: 0x222222,
+        flatShading: false
+      });
+
+      const blockSize = 22;
+      const gap = 1.5;
 
       const shapes = {
-        'I': [[0,0],[0,1],[0,2],[0,3]],
-        'T': [[1,0],[0,1],[1,1],[2,1]],
-        'L': [[0,0],[0,1],[0,2],[1,2]],
-        'J': [[1,0],[1,1],[1,2],[0,2]],
-        'O': [[0,0],[1,0],[0,1],[1,1]],
-        'S': [[1,0],[2,0],[0,1],[1,1]],
-        'Z': [[0,0],[1,0],[1,1],[2,1]]
+        'I': [[0,0,0], [0,1,0], [0,2,0], [0,3,0]],
+        'T': [[1,0,0], [-1,0,0], [1,0,0], [0,1,0]],
+        'L': [[0,0,0], [0,1,0], [0,2,0], [1,2,0]],
+        'J': [[1,0,0], [1,1,0], [1,2,0], [-1,2,0]],
+        'O': [[0,0,0], [1,0,0], [0,1,0], [1,1,0]],
+        'S': [[1,0,0], [2,0,0], [-1,1,0], [0,1,0]],
+        'Z': [[0,0,0], [-1,0,0], [0,1,0], [1,1,0]]
       };
 
       const layout = shapes[type] || shapes['O'];
 
-      layout.forEach(([bx, by]) => {
-        const block = document.createElement('div');
-        block.className = 'block';
-        block.style.left = (bx * 22) + 'px';
-        block.style.top = (by * 22) + 'px';
-        container.appendChild(block);
+      layout.forEach(([ox, oy, oz]) => {
+        const geometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(ox * (blockSize + gap), oy * (blockSize + gap), oz * (blockSize + gap));
+        group.add(mesh);
       });
 
-      // Click to explode
-      container.addEventListener('click', () => {
-        explodeIntoParticles(container, color);
-      });
+      group.position.set(x, y, z);
+      group.rotation.set(
+        (Math.random() - 0.5) * 0.6,
+        Math.random() * Math.PI * 2,
+        (Math.random() - 0.5) * 0.6
+      );
 
-      overlay.appendChild(container);
-      tetrominoes.push(container);
+      // Gentle floating + self rotation
+      group.userData.floatSpeed = 0.8 + Math.random() * 0.6;
+      group.userData.rotSpeed = 0.4 + Math.random() * 0.8;
 
-      // Self rotation + floating (3D object feel)
-      container.animate([
-        { 
-          transform: container.style.transform 
-        },
-        { 
-          transform: `translateZ(${startZ + 280}px) scale(1.35) rotateX(${28 + Math.random()*12}deg) rotateY(${Math.random()*90 - 45}deg)` 
+      scene.add(group);
+      tetrominoMeshes.push(group);
+
+      // Click interaction
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+
+      renderer.domElement.addEventListener('click', (event) => {
+        if (!isThreeActive || group.userData.exploded) return;
+
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(group.children, true);
+
+        if (intersects.length > 0) {
+          explodeTetromino(group);
         }
-      ], {
-        duration: 5200 + Math.random() * 1800,
-        iterations: Infinity,
-        direction: 'alternate',
-        easing: 'ease-in-out'
       });
 
-      // Extra self-spin for 3D object feeling
-      container.animate([
-        { transform: 'rotateY(0deg)' },
-        { transform: 'rotateY(360deg)' }
-      ], {
-        duration: 3800 + Math.random() * 2200,
-        iterations: Infinity,
-        easing: 'linear'
-      });
-
-      return container;
+      return group;
     }
 
-    function explodeIntoParticles(element, color) {
-      const rect = element.getBoundingClientRect();
-      const overlayRect = overlay.getBoundingClientRect();
+    function explodeTetromino(group) {
+      if (group.userData.exploded) return;
+      group.userData.exploded = true;
 
-      const centerX = rect.left - overlayRect.left + rect.width / 2;
-      const centerY = rect.top - overlayRect.top + rect.height / 2;
-
-      element.remove();
       playExplosionSound();
 
-      for (let i = 0; i < 12; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        p.style.background = color;
-        p.style.left = centerX + 'px';
-        p.style.top = centerY + 'px';
-        p.style.width = (7 + Math.random() * 7) + 'px';
-        p.style.height = p.style.width;
+      const worldPos = new THREE.Vector3();
+      group.getWorldPosition(worldPos);
 
-        overlay.appendChild(p);
+      // Remove original
+      scene.remove(group);
+      const index = tetrominoMeshes.indexOf(group);
+      if (index > -1) tetrominoMeshes.splice(index, 1);
 
-        const angle = (i / 12) * Math.PI * 2 + (Math.random() - 0.5) * 1.1;
-        const velocity = 200 + Math.random() * 160;
-        const tx = Math.cos(angle) * velocity;
-        const ty = Math.sin(angle) * velocity - 70;
+      // Create flying particle blocks
+      const particleMat = new THREE.MeshPhongMaterial({
+        color: group.children[0].material.color,
+        shininess: 20
+      });
 
-        p.animate([
-          { transform: 'translate(0,0) scale(1)', opacity: 1 },
-          { transform: `translate(${tx}px, ${ty}px) scale(0.2)`, opacity: 0 }
-        ], {
-          duration: 720 + Math.random() * 380,
-          easing: 'cubic-bezier(0.23, 1, 0.32, 1)'
-        }).onfinish = () => p.remove();
+      for (let i = 0; i < 14; i++) {
+        const size = 6 + Math.random() * 7;
+        const geo = new THREE.BoxGeometry(size, size, size);
+        const p = new THREE.Mesh(geo, particleMat);
+
+        p.position.copy(worldPos);
+        p.position.x += (Math.random() - 0.5) * 30;
+        p.position.y += (Math.random() - 0.5) * 30;
+
+        const vel = new THREE.Vector3(
+          (Math.random() - 0.5) * 4.5,
+          (Math.random() - 0.5) * 4.5 + 1.8,
+          (Math.random() - 0.5) * 3
+        );
+
+        p.userData.velocity = vel;
+        p.userData.life = 65 + Math.random() * 35;
+
+        scene.add(p);
+        tetrominoMeshes.push(p); // reuse array for cleanup
       }
     }
 
     function spawnRandomTetrominoes() {
       const types = ['I','T','L','J','O','S','Z'];
-      const colors = ['#00f9ff', '#ff00aa', '#c084fc', '#00f9ff', '#ff00aa', '#c084fc', '#00f9ff'];
+      const colors = [0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff];
 
-      let count = 0;
+      let spawned = 0;
 
       const interval = setInterval(() => {
-        if (!overlay.classList.contains('active') || count >= 8) {
+        const overlay = document.getElementById('start-overlay');
+        if (!overlay || !overlay.classList.contains('active') || spawned >= 8 || !isThreeActive) {
           clearInterval(interval);
           return;
         }
@@ -255,12 +299,96 @@
         const type = types[Math.floor(Math.random() * types.length)];
         const color = colors[Math.floor(Math.random() * colors.length)];
 
-        const x = 30 + Math.random() * (overlay.offsetWidth - 140);
-        const y = 50 + Math.random() * (overlay.offsetHeight - 220);
+        const x = (Math.random() - 0.5) * 380;
+        const y = (Math.random() - 0.5) * 280 - 40;
+        const z = -380 - Math.random() * 320; // far away
 
-        createTetrominoShape(type, color, x, y);
-        count++;
+        create3DTetromino(type, color, x, y, z);
+        spawned++;
       }, 380);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (!scene || !camera || !renderer) return;
+
+      const overlay = document.getElementById('start-overlay');
+      if (!overlay || !overlay.classList.contains('active')) {
+        isThreeActive = false;
+        return;
+      }
+
+      tetrominoMeshes.forEach((obj, i) => {
+        if (!obj || !obj.parent) return;
+
+        // Self rotation + floating
+        if (obj.userData.rotSpeed) {
+          obj.rotation.y += obj.userData.rotSpeed * 0.012;
+          obj.rotation.x = Math.sin(Date.now() * 0.0008 + i) * 0.25;
+        }
+
+        if (obj.userData.floatSpeed) {
+          obj.position.y += Math.sin(Date.now() * 0.0015 + i) * 0.12;
+        }
+
+        // Gentle move toward camera
+        if (obj.position.z < 180) {
+          obj.position.z += 1.8;
+        }
+
+        // Simple particle physics for exploded pieces
+        if (obj.userData.velocity) {
+          obj.position.add(obj.userData.velocity);
+          obj.userData.velocity.y -= 0.085; // gravity
+          obj.userData.life--;
+
+          if (obj.userData.life <= 0) {
+            scene.remove(obj);
+            const idx = tetrominoMeshes.indexOf(obj);
+            if (idx > -1) tetrominoMeshes.splice(idx, 1);
+          }
+        }
+      });
+
+      renderer.render(scene, camera);
+    }
+
+    function launchGameWithEffect() {
+      const overlay = document.getElementById('start-overlay');
+      overlay.classList.add('rushing', 'glitching');
+      isThreeActive = false;
+
+      // Explode everything
+      tetrominoMeshes.forEach(obj => {
+        if (obj && obj.parent && !obj.userData.exploded) {
+          const color = obj.children?.[0]?.material?.color?.getHex() || 0x00f9ff;
+          // Simple particle burst
+          for (let k = 0; k < 10; k++) {
+            const size = 5 + Math.random() * 6;
+            const geo = new THREE.BoxGeometry(size, size, size);
+            const mat = new THREE.MeshPhongMaterial({ color });
+            const p = new THREE.Mesh(geo, mat);
+            p.position.copy(obj.position);
+            p.userData.velocity = new THREE.Vector3(
+              (Math.random() - 0.5) * 5,
+              (Math.random() - 0.5) * 5 + 2,
+              (Math.random() - 0.5) * 4
+            );
+            p.userData.life = 50 + Math.random() * 30;
+            scene.add(p);
+            tetrominoMeshes.push(p);
+          }
+          scene.remove(obj);
+        }
+      });
+      tetrominoMeshes = [];
+
+      playExplosionSound();
+
+      setTimeout(() => {
+        overlay.classList.remove('active', 'rushing', 'glitching');
+        startGame();
+      }, 1000);
     }
 
     function playExplosionSound() {
@@ -269,41 +397,23 @@
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.value = 65;
-        gain.gain.value = 0.55;
+        osc.frequency.value = 55;
+        gain.gain.value = 0.6;
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
         setTimeout(() => {
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.65);
-          setTimeout(() => osc.stop(), 750);
-        }, 50);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
+          setTimeout(() => osc.stop(), 800);
+        }, 40);
       } catch(e) {}
     }
 
-    function launchGameWithEffect() {
-      overlay.classList.add('rushing', 'glitching');
-
-      tetrominoes.forEach(t => {
-        if (t.parentNode) {
-          const color = t.style.color || '#00f9ff';
-          explodeIntoParticles(t, color);
-        }
-      });
-      tetrominoes = [];
-
-      playExplosionSound();
-
-      setTimeout(() => {
-        overlay.classList.remove('active', 'rushing', 'glitching');
-        startGame();
-      }, 980);
-    }
-
+    // Boot Three.js when page loads
     window.onload = function() {
       setTimeout(() => {
-        spawnRandomTetrominoes();
-      }, 280);
+        initThreeJS();
+      }, 150);
     };
   </script>
 </body>
