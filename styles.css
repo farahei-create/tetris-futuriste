@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE - Fixed version (welcome screen first + game board) === */
+/* === TETRIS NÉON FUTURISTE - Final polished version === */
 
 body {
   background: #020208;
@@ -238,7 +238,7 @@ h1:hover {
   box-shadow: 0 0 32px #00f9ff;
 }
 
-/* WELCOME SCREEN - Must appear first */
+/* WELCOME SCREEN */
 .start-overlay {
   position: absolute;
   top: 0;
@@ -250,7 +250,7 @@ h1:hover {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 30; /* Higher z-index to cover game */
+  z-index: 30;
   border-radius: 10px;
   backdrop-filter: blur(8px);
   overflow: hidden;
@@ -260,7 +260,6 @@ h1:hover {
   display: flex;
 }
 
-/* NEW FUTURISTIC EXPLODING TETRIS BACKGROUND */
 .start-overlay.active {
   background: 
     radial-gradient(circle at 25% 30%, rgba(0, 249, 255, 0.18) 0%, transparent 55%),
@@ -389,7 +388,6 @@ h1:hover {
   transform: scale(1.02);
 }
 
-/* Other overlays */
 .pause-overlay, .settings-overlay, .game-over-overlay {
   position: fixed;
   top: 50%;
@@ -469,6 +467,19 @@ h1:hover {
   accent-color: #00f9ff;
 }
 
+/* INSTRUCTIONS - Properly placed and centered */
+.instructions {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #a090d0;
+  line-height: 1.4;
+  padding: 0 10px;
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* MOBILE */
 @media (max-width: 480px) {
   .hold-panel {
@@ -503,6 +514,10 @@ h1:hover {
   .controls-main {
     max-width: 320px;
     padding: 0 14px;
+  }
+  .instructions {
+    font-size: 0.7rem;
+    margin-top: 8px;
   }
 }
 
