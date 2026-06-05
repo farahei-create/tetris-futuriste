@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE - v3.0: Premium Cinematic Futuristic Redesign === */
+/* === TETRIS NÉON FUTURISTE - v3.1: Permanent 3D Holographic Gameplay View === */
 
 body {
   background: #020208;
@@ -407,4 +407,10 @@ h1 {
   30% { opacity: 1; }
   75% { opacity: 0.9; }
   100% { opacity: 0; transform: scale(2.1); }
+}
+
+/* === PERMANENT 3D HOLOGRAPHIC GAMEPLAY VIEW (like end of transition) === */
+.game-wrapper.playing-3d {
+  transform: perspective(1400px) rotateX(7deg) !important;
+  transition: transform 0.9s cubic-bezier(0.23, 1, 0.32, 1);
 }

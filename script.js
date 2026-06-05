@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE v3.0 - Premium Cinematic Futuristic Redesign + Longer Ultra-Fluid Launch === */
+/* === TETRIS NÉON FUTURISTE v3.1 - Permanent 3D Holographic Gameplay View === */
 
 let BLOCK_SIZE = 28;
 const COLS = 10;
@@ -793,7 +793,6 @@ function startGame() {
   const wrapper = document.querySelector('.game-wrapper');
   startOverlay.classList.remove('active');
 
-  // === LONGER & ULTRA-FLUID 3D FUTURISTIC LAUNCH (v3) ===
   wrapper.classList.add('launching');
 
   if (document.documentElement.requestFullscreen) {
@@ -812,6 +811,9 @@ function startGame() {
     showControls();
     scheduleHideControls();
     setTimeout(resizeGame, 80);
+
+    // === APPLY PERMANENT 3D HOLOGRAPHIC VIEW (like end of transition) ===
+    wrapper.classList.add('playing-3d');
   };
   wrapper.addEventListener('transitionend', finalizeLaunch, { once: true });
 }
@@ -846,6 +848,8 @@ function restartGame() {
   pauseOverlay.classList.remove('active');
   startOverlay.classList.remove('active');
   isFullscreenMode = false;
+  const wrapper = document.querySelector('.game-wrapper');
+  wrapper.classList.remove('playing-3d');
   resetGame();
   lastDropTime = performance.now();
   animationFrame = requestAnimationFrame(gameLoop);
@@ -885,7 +889,7 @@ function init() {
     if (!gameOver && !paused && controlsOverlay) hideControls();
   }, 1900);
 
-  console.log('%c[Tetris Neon v3.0] Premium Cinematic Redesign + Ultra-Fluid Launch activés !', 'color:#00f9ff');
+  console.log('%c[Tetris Neon v3.1] Permanent 3D Holographic Gameplay View activé !', 'color:#00f9ff');
 }
 
 init();
