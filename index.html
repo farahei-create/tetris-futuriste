@@ -134,7 +134,31 @@
       pinkLight.position.set(80, -80, 220);
       scene.add(pinkLight);
 
-      setTimeout(() => { if (isThreeActive) spawnRandomTetrominoes(); }, 350);
+      // Global click handler for exploding tetrominoes
+      renderer.domElement.addEventListener('click', (e) => {
+        if (!isThreeActive || transitionInProgress) return;
+
+        const rect = renderer.domElement.getBoundingClientRect();
+        const mouse = new THREE.Vector2();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+        const ray = new THREE.Raycaster();
+        ray.setFromCamera(mouse, camera);
+
+        for (let i = tetrominoMeshes.length - 1; i >= 0; i--) {
+          const obj = tetrominoMeshes[i];
+          if (!obj || !obj.parent || obj.userData.exploded) continue;
+
+          const hits = ray.intersectObjects(obj.children || [], true);
+          if (hits.length > 0) {
+            explodeTetromino(obj);
+            break;
+          }
+        }
+      });
+
+      setTimeout(() => { if (isThreeActive) spawnRandomTetrominoes(); }, 300);
 
       window.addEventListener('resize', () => {
         renderer.setSize(container.clientWidth, container.clientHeight);
@@ -182,24 +206,6 @@
 
       scene.add(group);
       tetrominoMeshes.push(group);
-
-      // Click to explode (restored and fixed)
-      renderer.domElement.addEventListener('click', function handler(e) {
-        if (!isThreeActive || group.userData.exploded) return;
-        const rect = renderer.domElement.getBoundingClientRect();
-        const mouse = new THREE.Vector2();
-        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
-        const ray = new THREE.Raycaster();
-        ray.setFromCamera(mouse, camera);
-        const hits = ray.intersectObjects(group.children, true);
-        if (hits.length > 0) {
-          explodeTetromino(group);
-          renderer.domElement.removeEventListener('click', handler);
-        }
-      });
-
       return group;
     }
 
@@ -252,7 +258,7 @@
         const z = -480 - Math.random()*220;
         create3DTetromino(type, color, x, y, z);
         count++;
-      }, 320);
+      }, 280);
     }
 
     function animate() {
@@ -265,13 +271,17 @@
       tetrominoMeshes.forEach((obj, i) => {
         if (!obj || !obj.parent) return;
 
-        if (obj.userData.rotSpeedY) obj.rotation.y += obj.userData.rotSpeedY * 0.014;
+        if (obj.userData.rotSpeedY) {
+          obj.rotation.y += obj.userData.rotSpeedY * 0.014;
+        }
 
-        if (obj.position.z < 130) obj.position.z += 2.4;
+        if (obj.position.z < 125) {
+          obj.position.z += 2.5;
+        }
 
         if (obj.userData.velocity) {
           obj.position.add(obj.userData.velocity);
-          obj.userData.velocity.y -= 0.1;
+          obj.userData.velocity.y -= 0.105;
           obj.userData.life--;
           if (obj.userData.life <= 0) {
             scene.remove(obj);
@@ -317,7 +327,6 @@
 
       playExplosionSound();
 
-      // Futuristic Matrix-style 3D transition
       const startZ = camera.position.z;
       const startTime = Date.now();
       const duration = 1350;
@@ -326,8 +335,8 @@
         const t = Math.min((Date.now() - startTime) / duration, 1);
         const eased = t < 0.6 ? (t/0.6) : 1;
 
-        camera.position.z = startZ - (eased * 320);
-        camera.rotation.y = Math.sin(t * Math.PI * 1.2) * 0.7;
+        camera.position.z = startZ - (eased * 340);
+        camera.rotation.y = Math.sin(t * Math.PI * 1.3) * 0.75;
 
         if (t < 1) {
           requestAnimationFrame(matrixTransition);
@@ -371,7 +380,7 @@
     }
 
     window.onload = function() {
-      setTimeout(() => { initThreeJS(); }, 60);
+      setTimeout(() => { initThreeJS(); }, 50);
     };
   </script>
 </body>
