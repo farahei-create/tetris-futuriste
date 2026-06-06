@@ -6,9 +6,24 @@
   <title>TETRIS NÉON // 2084</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    #three-container { position:absolute; top:0; left:0; width:100%; height:100%; z-index:2; pointer-events:auto; transition:opacity .4s ease, transform .6s cubic-bezier(.23,1,.32,1); }
-    .overlay-content { z-index:10; position:relative; }
-    .start-overlay.rushing #three-container { opacity:0; transform:scale(1.15); }
+    #three-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: auto;
+      transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .overlay-content {
+      z-index: 10;
+      position: relative;
+    }
+    .start-overlay.rushing #three-container {
+      opacity: 0;
+      transform: scale(1.15);
+    }
   </style>
 </head>
 <body>
@@ -18,27 +33,32 @@
       <p class="subtitle">2084 • CYBERPUNK EDITION</p>
     </header>
 
-    <!-- NOUVEAU HUD UNIFORME - CÔTÉ À CÔTÉ AU-DESSUS -->
-    <div class="hud-top">
-      <div class="hud-section hold-section">
-        <div class="hud-label">HOLD</div>
-        <canvas id="hold-piece" width="58" height="58"></canvas>
-        <button id="hold-btn" onclick="holdPiece()" class="control-btn hold-btn">HOLD</button>
-      </div>
-      <div class="hud-section stats-section">
-        <div class="hud-item"><div class="hud-label">SCORE</div><div id="score">000000</div></div>
-        <div class="hud-item"><div class="hud-label">NIVEAU</div><div id="level">01</div></div>
-        <div class="hud-item"><div class="hud-label">LIGNES</div><div id="lines">000</div></div>
-      </div>
-      <div class="hud-section next-section">
-        <div class="hud-label">SUIVANTE</div>
-        <canvas id="next-piece" width="58" height="58"></canvas>
-      </div>
-    </div>
-
-    <div class="game-wrapper" style="position:relative;">
+    <div class="game-wrapper" style="position: relative;">
       <div class="holo-frame"></div>
       <canvas id="board" width="320" height="640"></canvas>
+
+      <div class="hold-panel">
+        <div class="hud-item">
+          <div class="hud-label">HOLD</div>
+          <canvas id="hold-piece" width="70" height="70"></canvas>
+        </div>
+        <button id="hold-btn" onclick="holdPiece()" class="control-btn hold-btn">HOLD</button>
+      </div>
+
+      <div class="floating-hud">
+        <div class="hud-panel left">
+          <div class="hud-item"><div class="hud-label">SCORE</div><div id="score">000000</div></div>
+          <div class="hud-item"><div class="hud-label">NIVEAU</div><div id="level">01</div></div>
+          <div class="hud-item"><div class="hud-label">LIGNES</div><div id="lines">000</div></div>
+        </div>
+
+        <div class="hud-panel right">
+          <div class="hud-item next">
+            <div class="hud-label">SUIVANTE</div>
+            <canvas id="next-piece" width="70" height="70"></canvas>
+          </div>
+        </div>
+      </div>
 
       <div id="controls-overlay" class="controls-overlay">
         <div class="controls-main">
@@ -51,8 +71,10 @@
         </div>
       </div>
 
+      <!-- WELCOME SCREEN WITH THREE.JS -->
       <div id="start-overlay" class="start-overlay active">
         <div id="three-container"></div>
+
         <div class="overlay-content">
           <h2>BIENVENUE DANS LE FUTUR</h2>
           <p>Prêt à empiler des blocs néon ?</p>
@@ -63,7 +85,7 @@
 
       <div id="pause-overlay" class="pause-overlay">
         <div class="overlay-content">
-          <h2 onclick="togglePause()" style="cursor:pointer;user-select:none;">PAUSE</h2>
+          <h2 onclick="togglePause()" style="cursor: pointer; user-select: none;">PAUSE</h2>
           <div class="pause-buttons">
             <button onclick="togglePause()">REPRENDRE</button>
             <button onclick="showSettings()">CONFIGURATIONS</button>
@@ -84,45 +106,490 @@
         <div class="overlay-content">
           <h2>CONFIGURATIONS</h2>
           <div class="settings-list">
-            <label><input type="checkbox" id="sound-toggle" checked> Son activé</label>
-            <label><input type="checkbox" id="controls-always-show"> Toujours afficher les contrôles</label>
-            <label><input type="checkbox" id="view-3d-toggle" checked> Vue 3D holographique</label>
+            <label>
+              <input type="checkbox" id="sound-toggle" checked> Son activé
+            </label>
+            <label>
+              <input type="checkbox" id="controls-always-show"> Toujours afficher les contrôles
+            </label>
+            <label>
+              <input type="checkbox" id="view-3d-toggle" checked> Vue 3D holographique
+            </label>
           </div>
           <button onclick="hideSettings()">RETOUR</button>
         </div>
       </div>
     </div>
 
-    <div class="instructions">Glisse vers le bas rapidement pour chute instantanée • Touche l’écran pour afficher les boutons</div>
+    <div class="instructions">
+      Glisse vers le bas rapidement pour chute instantanée • Touche l’écran pour afficher les boutons
+    </div>
   </div>
 
   <script src="script.js"></script>
+  <!-- Three.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
-    // ==================== AUDIO (propre) ====================
+    // ==================== ADVANCED WEB AUDIO API ====================
     const Audio = {
-      ctx: null, enabled: true,
-      init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
-      play(type, options = {}) { if (!this.enabled) return; this.init(); switch(type){ case 'move':this._playMove();break; case 'rotate':this._playRotate();break; case 'lock':this._playLock();break; case 'line':this._playLineClear(options.lines||1);break; case 'explosion':this._playExplosion();break; case 'gameover':this._playGameOver();break; case 'hold':this._playHold();break; } },
-      _playMove(){const o=this.ctx.createOscillator(),g=this.ctx.createGain(),f=this.ctx.createBiquadFilter();o.type='sawtooth';o.frequency.value=180;f.type='lowpass';f.frequency.value=800;g.gain.value=.25;g.gain.linearRampToValueAtTime(.001,this.ctx.currentTime+.12);o.connect(f);f.connect(g);g.connect(this.ctx.destination);o.start();setTimeout(()=>o.stop(),150);},
-      _playRotate(){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='triangle';o.frequency.value=620;g.gain.value=.3;g.gain.linearRampToValueAtTime(.001,this.ctx.currentTime+.18);o.connect(g);g.connect(this.ctx.destination);o.start();setTimeout(()=>o.stop(),200);},
-      _playLock(){const o=this.ctx.createOscillator(),g=this.ctx.createGain(),n=this.ctx.createBufferSource(),b=this.ctx.createBuffer(1,this.ctx.sampleRate*.15,this.ctx.sampleRate);for(let i=0;i<b.getChannelData(0).length;i++)b.getChannelData(0)[i]=Math.random()*2-1;n.buffer=b;o.type='sawtooth';o.frequency.value=90;const ng=this.ctx.createGain();ng.gain.value=.4;ng.gain.linearRampToValueAtTime(.001,this.ctx.currentTime+.2);g.gain.value=.35;g.gain.linearRampToValueAtTime(.001,this.ctx.currentTime+.25);o.connect(g);n.connect(ng);g.connect(this.ctx.destination);ng.connect(this.ctx.destination);o.start();n.start();setTimeout(()=>{o.stop();n.stop()},300);},
-      _playLineClear(l=1){const bf=l>=4?520:380,d=l>=4?.6:.35;for(let i=0;i<(l>=4?3:2);i++)setTimeout(()=>{const o=this.ctx.createOscillator(),g=this.ctx.createGain(),f=this.ctx.createBiquadFilter();o.type='sawtooth';o.frequency.value=bf+i*80;f.type='lowpass';f.frequency.value=1200;g.gain.value=.4;g.gain.linearRampToValueAtTime(.001,this.ctx.currentTime+d);o.connect(f);f.connect(g);g.connect(this.ctx.destination);o.start();setTimeout(()=>o.stop(),d*1000+50)},i*60);},
-      _playExplosion(){const n=this.ctx.createBufferSource(),b=this.ctx.createBuffer(1,this.ctx.sampleRate*.8,this.ctx.sampleRate);for(let i=0;i<b.getChannelData(0).length;i++)b.getChannelData(0)[i]=Math.random()*2-1;n.buffer=b;const nf=this.ctx.createBiquadFilter();nf.type='lowpass';nf.frequency.value=800;const ng=this.ctx.createGain();ng.gain.value=.7;ng.gain.linearRampToValueAtTime(.001,this.ctx.currentTime+.9);const o=this.ctx.createOscillator();o.type='sawtooth';o.frequency.value=55;const og=this.ctx.createGain();og.gain.value=.6;og.gain.linearRampToValueAtTime(.001,this.ctx.currentTime+.7);n.connect(nf);nf.connect(ng);o.connect(og);ng.connect(this.ctx.destination);og.connect(this.ctx.destination);n.start();o.start();setTimeout(()=>{n.stop();o.stop()},950);},
-      _playGameOver(){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sawtooth';o.frequency.value=120;g.gain.value=.5;o.connect(g);g.connect(this.ctx.destination);o.start();setTimeout(()=>{o.frequency.linearRampToValueAtTime(40,this.ctx.currentTime+1.2);g.gain.linearRampToValueAtTime(.001,this.ctx.currentTime+1.5);setTimeout(()=>o.stop(),1600)},200);},
-      _playHold(){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.value=440;g.gain.value=.3;g.gain.linearRampToValueAtTime(.001,this.ctx.currentTime+.25);o.connect(g);g.connect(this.ctx.destination);o.start();setTimeout(()=>o.stop(),300);}
+      ctx: null,
+      enabled: true,
+
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      },
+
+      play(type, options = {}) {
+        if (!this.enabled) return;
+        this.init();
+
+        switch(type) {
+          case 'move': this._playMove(); break;
+          case 'rotate': this._playRotate(); break;
+          case 'lock': this._playLock(); break;
+          case 'line': this._playLineClear(options.lines || 1); break;
+          case 'explosion': this._playExplosion(); break;
+          case 'gameover': this._playGameOver(); break;
+          case 'hold': this._playHold(); break;
+        }
+      },
+
+      _playMove() {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+
+        osc.type = 'sawtooth';
+        osc.frequency.value = 180;
+        filter.type = 'lowpass';
+        filter.frequency.value = 800;
+        gain.gain.value = 0.25;
+        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        setTimeout(() => osc.stop(), 150);
+      },
+
+      _playRotate() {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = 620;
+        gain.gain.value = 0.3;
+        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        setTimeout(() => osc.stop(), 200);
+      },
+
+      _playLock() {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const noise = this.ctx.createBufferSource();
+        const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.15, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+        noise.buffer = buffer;
+
+        osc.type = 'sawtooth';
+        osc.frequency.value = 90;
+        const noiseGain = this.ctx.createGain();
+        noiseGain.gain.value = 0.4;
+        noiseGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+        gain.gain.value = 0.35;
+        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+
+        osc.connect(gain);
+        noise.connect(noiseGain);
+        gain.connect(this.ctx.destination);
+        noiseGain.connect(this.ctx.destination);
+        osc.start();
+        noise.start();
+        setTimeout(() => { osc.stop(); noise.stop(); }, 300);
+      },
+
+      _playLineClear(lines = 1) {
+        const baseFreq = lines >= 4 ? 520 : 380;
+        const duration = lines >= 4 ? 0.6 : 0.35;
+
+        for (let i = 0; i < (lines >= 4 ? 3 : 2); i++) {
+          setTimeout(() => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            const filter = this.ctx.createBiquadFilter();
+            osc.type = 'sawtooth';
+            osc.frequency.value = baseFreq + (i * 80);
+            filter.type = 'lowpass';
+            filter.frequency.value = 1200;
+            gain.gain.value = 0.4;
+            gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            setTimeout(() => osc.stop(), duration * 1000 + 50);
+          }, i * 60);
+        }
+      },
+
+      _playExplosion() {
+        const noise = this.ctx.createBufferSource();
+        const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.8, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+        noise.buffer = buffer;
+
+        const noiseFilter = this.ctx.createBiquadFilter();
+        noiseFilter.type = 'lowpass';
+        noiseFilter.frequency.value = 800;
+        const noiseGain = this.ctx.createGain();
+        noiseGain.gain.value = 0.7;
+        noiseGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.9);
+
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.value = 55;
+        const oscGain = this.ctx.createGain();
+        oscGain.gain.value = 0.6;
+        oscGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.7);
+
+        noise.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        osc.connect(oscGain);
+        noiseGain.connect(this.ctx.destination);
+        oscGain.connect(this.ctx.destination);
+
+        noise.start();
+        osc.start();
+        setTimeout(() => { noise.stop(); osc.stop(); }, 950);
+      },
+
+      _playGameOver() {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.value = 120;
+        gain.gain.value = 0.5;
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        setTimeout(() => {
+          osc.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 1.2);
+          gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 1.5);
+          setTimeout(() => osc.stop(), 1600);
+        }, 200);
+      },
+
+      _playHold() {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 440;
+        gain.gain.value = 0.3;
+        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        setTimeout(() => osc.stop(), 300);
+      }
     };
-    window.playSound=(t,o)=>Audio.play(t,o);
+
+    window.playSound = (type, options) => Audio.play(type, options);
 
     // ==================== THREE.JS ====================
-    let scene,camera,renderer,tetrominoMeshes=[],isThreeActive=true;
-    function initThreeJS(){const c=document.getElementById('three-container');if(!c)return;renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});renderer.setSize(c.clientWidth,c.clientHeight);renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));c.appendChild(renderer.domElement);scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(55,c.clientWidth/c.clientHeight,.1,2000);camera.position.set(0,0,420);scene.add(new THREE.AmbientLight(0x112233,.6));const pl=new THREE.PointLight(0x00f9ff,1.2,800);pl.position.set(0,80,300);scene.add(pl);const pink=new THREE.PointLight(0xff00aa,.9,700);pink.position.set(0,-60,280);scene.add(pink);window.addEventListener('resize',()=>{if(!c||!renderer||!camera)return;renderer.setSize(c.clientWidth,c.clientHeight);camera.aspect=c.clientWidth/c.clientHeight;camera.updateProjectionMatrix()});animate();setTimeout(()=>{for(let i=0;i<11;i++)setTimeout(()=>{const types=['I','T','L','J','O','S','Z'],colors=[0x00f9ff,0xff00aa,0xc084fc,0x00f9ff,0xff00aa,0xc084fc,0x00f9ff],t=types[Math.floor(Math.random()*types.length)],col=colors[Math.floor(Math.random()*colors.length)],x=(Math.random()-.5)*380,y=(Math.random()-.5)*280-10,z=-400-Math.random()*140;create3DTetromino(t,col,x,y,z)},i*220)},150)}
-    function create3DTetromino(type,color,x,y,z){const g=new THREE.Group();g.userData={type,exploded:false};const mat=new THREE.MeshPhongMaterial({color,shininess:35,specular:0x222222});const bs=22,gap=1.5;const shapes={'I':[[0,0,0],[0,1,0],[0,2,0],[0,3,0]],'T':[[1,0,0],[-1,0,0],[1,0,0],[0,1,0]],'L':[[0,0,0],[0,1,0],[0,2,0],[1,2,0]],'J':[[1,0,0],[1,1,0],[1,2,0],[-1,2,0]],'O':[[0,0,0],[1,0,0],[0,1,0],[1,1,0]],'S':[[1,0,0],[2,0,0],[-1,1,0],[0,1,0]],'Z':[[0,0,0],[-1,0,0],[0,1,0],[1,1,0]]};(shapes[type]||shapes.O).forEach(([ox,oy,oz])=>{const geo=new THREE.BoxGeometry(bs,bs,bs);const m=new THREE.Mesh(geo,mat);m.position.set(ox*(bs+gap),oy*(bs+gap),oz*(bs+gap));g.add(m)});g.position.set(x,y,z);g.rotation.set((Math.random()-.5)*.6,Math.random()*Math.PI*2,(Math.random()-.5)*.6);g.userData.floatSpeed=.8+Math.random()*.6;g.userData.rotSpeed=.4+Math.random()*.8;scene.add(g);tetrominoMeshes.push(g);return g}
-    document.addEventListener('click',e=>{if(!isThreeActive||!renderer)return;const tc=document.getElementById('three-container');if(!tc)return;const r=tc.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)return;const mouse=new THREE.Vector2();mouse.x=((e.clientX-r.left)/r.width)*2-1;mouse.y=-((e.clientY-r.top)/r.height)*2+1;const ray=new THREE.Raycaster();ray.setFromCamera(mouse,camera);for(let i=tetrominoMeshes.length-1;i>=0;i--){const obj=tetrominoMeshes[i];if(!obj||!obj.parent||obj.userData?.exploded)continue;const hits=ray.intersectObjects(obj.children,true);if(hits.length>0){explodeTetromino(obj);break}}});
-    function explodeTetromino(group){if(group.userData.exploded)return;group.userData.exploded=true;Audio.play('explosion');const wp=new THREE.Vector3();group.getWorldPosition(wp);scene.remove(group);const idx=tetrominoMeshes.indexOf(group);if(idx>-1)tetrominoMeshes.splice(idx,1);const pmat=new THREE.MeshPhongMaterial({color:group.children[0].material.color,shininess:20});for(let i=0;i<14;i++){const s=6+Math.random()*7;const geo=new THREE.BoxGeometry(s,s,s);const p=new THREE.Mesh(geo,pmat);p.position.copy(wp);p.position.x+=(Math.random()-.5)*30;p.position.y+=(Math.random()-.5)*30;p.userData.velocity=new THREE.Vector3((Math.random()-.5)*4.8,(Math.random()-.5)*4.8+2,(Math.random()-.5)*3.5);p.userData.life=60+Math.random()*40;scene.add(p);tetrominoMeshes.push(p)}}
-    function animate(){requestAnimationFrame(animate);if(!scene||!camera||!renderer)return;const ov=document.getElementById('start-overlay');if(!ov||!ov.classList.contains('active')){isThreeActive=false;return}tetrominoMeshes.forEach((obj,i)=>{if(!obj||!obj.parent)return;if(obj.userData.rotSpeed){obj.rotation.y+=obj.userData.rotSpeed*.012;obj.rotation.x=Math.sin(Date.now()*.0008+i)*.22}if(obj.userData.floatSpeed)obj.position.y+=Math.sin(Date.now()*.0014+i)*.1;if(obj.position.z<160)obj.position.z+=2.1;tetrominoMeshes.forEach(other=>{if(other===obj||!other.parent||other.userData?.exploded)return;const dx=obj.position.x-other.position.x,dy=obj.position.y-other.position.y,dz=obj.position.z-other.position.z;const ds=dx*dx+dy*dy+dz*dz;if(ds>0.1&&ds<4200){const d=Math.sqrt(ds),f=(65-d)*.028;obj.position.x+=(dx/d)*f;obj.position.y+=(dy/d)*f;obj.position.z+=(dz/d)*f*.5}});if(obj.userData.velocity){obj.position.add(obj.userData.velocity);obj.userData.velocity.y-=.09;obj.userData.life--;if(obj.userData.life<=0){scene.remove(obj);const id=tetrominoMeshes.indexOf(obj);if(id>-1)tetrominoMeshes.splice(id,1)}}});renderer.render(scene,camera)}
-    function launchGameWithEffect(){const ov=document.getElementById('start-overlay'),tc=document.getElementById('three-container');ov.classList.add('rushing','glitching');isThreeActive=false;tetrominoMeshes.forEach(obj=>{if(obj&&obj.parent&&!obj.userData.exploded){const col=obj.children?.[0]?.material?.color?.getHex()||0x00f9ff;for(let k=0;k<11;k++){const s=5+Math.random()*7;const g=new THREE.BoxGeometry(s,s,s);const m=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:col}));m.position.copy(obj.position);m.userData.velocity=new THREE.Vector3((Math.random()-.5)*5.5,(Math.random()-.5)*5.5+2.2,(Math.random()-.5)*4);m.userData.life=55+Math.random()*35;scene.add(m);tetrominoMeshes.push(m)}scene.remove(obj)}});tetrominoMeshes=[];Audio.play('explosion');if(tc){tc.style.transition='opacity .45s ease,transform .6s cubic-bezier(.23,1,.32,1)';tc.style.opacity='0';tc.style.transform='scale(1.12)'}setTimeout(()=>{ov.classList.remove('active','rushing','glitching');if(renderer){renderer.dispose();const c=document.getElementById('three-container');if(c)c.innerHTML=''}startGame()},1050)}
-    window.onload=function(){setTimeout(()=>{initThreeJS()},120)};
+    let scene, camera, renderer;
+    let tetrominoMeshes = [];
+    let isThreeActive = true;
+
+    function initThreeJS() {
+      const container = document.getElementById('three-container');
+      if (!container) return;
+
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(55, container.clientWidth / container.clientHeight, 0.1, 2000);
+      camera.position.set(0, 0, 420);
+
+      const ambient = new THREE.AmbientLight(0x112233, 0.6);
+      scene.add(ambient);
+
+      const pointLight = new THREE.PointLight(0x00f9ff, 1.2, 800);
+      pointLight.position.set(0, 80, 300);
+      scene.add(pointLight);
+
+      const pinkLight = new THREE.PointLight(0xff00aa, 0.9, 700);
+      pinkLight.position.set(0, -60, 280);
+      scene.add(pinkLight);
+
+      window.addEventListener('resize', () => {
+        if (!container || !renderer || !camera) return;
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+      });
+
+      animate();
+
+      // Spawn 11 tetrominoes reliably
+      setTimeout(() => {
+        for (let i = 0; i < 11; i++) {
+          setTimeout(() => {
+            const types = ['I','T','L','J','O','S','Z'];
+            const colors = [0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff, 0xff00aa, 0xc084fc, 0x00f9ff];
+
+            const type = types[Math.floor(Math.random() * types.length)];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const x = (Math.random() - 0.5) * 380;
+            const y = (Math.random() - 0.5) * 280 - 10;
+            const z = -400 - Math.random() * 140;
+
+            create3DTetromino(type, color, x, y, z);
+          }, i * 220);
+        }
+      }, 150);
+    }
+
+    function create3DTetromino(type, color, x, y, z) {
+      const group = new THREE.Group();
+      group.userData = { type, exploded: false };
+
+      const material = new THREE.MeshPhongMaterial({
+        color: color,
+        shininess: 35,
+        specular: 0x222222
+      });
+
+      const blockSize = 22;
+      const gap = 1.5;
+
+      const shapes = {
+        'I': [[0,0,0], [0,1,0], [0,2,0], [0,3,0]],
+        'T': [[1,0,0], [-1,0,0], [1,0,0], [0,1,0]],
+        'L': [[0,0,0], [0,1,0], [0,2,0], [1,2,0]],
+        'J': [[1,0,0], [1,1,0], [1,2,0], [-1,2,0]],
+        'O': [[0,0,0], [1,0,0], [0,1,0], [1,1,0]],
+        'S': [[1,0,0], [2,0,0], [-1,1,0], [0,1,0]],
+        'Z': [[0,0,0], [-1,0,0], [0,1,0], [1,1,0]]
+      };
+
+      const layout = shapes[type] || shapes['O'];
+
+      layout.forEach(([ox, oy, oz]) => {
+        const geometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(ox * (blockSize + gap), oy * (blockSize + gap), oz * (blockSize + gap));
+        group.add(mesh);
+      });
+
+      group.position.set(x, y, z);
+      group.rotation.set(
+        (Math.random() - 0.5) * 0.6,
+        Math.random() * Math.PI * 2,
+        (Math.random() - 0.5) * 0.6
+      );
+
+      group.userData.floatSpeed = 0.8 + Math.random() * 0.6;
+      group.userData.rotSpeed = 0.4 + Math.random() * 0.8;
+
+      scene.add(group);
+      tetrominoMeshes.push(group);
+
+      return group;
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!isThreeActive || !renderer) return;
+
+      const threeContainer = document.getElementById('three-container');
+      if (!threeContainer) return;
+
+      const rect = threeContainer.getBoundingClientRect();
+      if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
+
+      const mouse = new THREE.Vector2();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      const ray = new THREE.Raycaster();
+      ray.setFromCamera(mouse, camera);
+
+      for (let i = tetrominoMeshes.length - 1; i >= 0; i--) {
+        const obj = tetrominoMeshes[i];
+        if (!obj || !obj.parent || obj.userData?.exploded) continue;
+
+        const hits = ray.intersectObjects(obj.children, true);
+        if (hits.length > 0) {
+          explodeTetromino(obj);
+          break;
+        }
+      }
+    });
+
+    function explodeTetromino(group) {
+      if (group.userData.exploded) return;
+      group.userData.exploded = true;
+      Audio.play('explosion');
+
+      const worldPos = new THREE.Vector3();
+      group.getWorldPosition(worldPos);
+
+      scene.remove(group);
+      const index = tetrominoMeshes.indexOf(group);
+      if (index > -1) tetrominoMeshes.splice(index, 1);
+
+      const particleMat = new THREE.MeshPhongMaterial({
+        color: group.children[0].material.color,
+        shininess: 20
+      });
+
+      for (let i = 0; i < 14; i++) {
+        const size = 6 + Math.random() * 7;
+        const geo = new THREE.BoxGeometry(size, size, size);
+        const p = new THREE.Mesh(geo, particleMat);
+
+        p.position.copy(worldPos);
+        p.position.x += (Math.random() - 0.5) * 30;
+        p.position.y += (Math.random() - 0.5) * 30;
+
+        p.userData.velocity = new THREE.Vector3(
+          (Math.random() - 0.5) * 4.8,
+          (Math.random() - 0.5) * 4.8 + 2,
+          (Math.random() - 0.5) * 3.5
+        );
+        p.userData.life = 60 + Math.random() * 40;
+
+        scene.add(p);
+        tetrominoMeshes.push(p);
+      }
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (!scene || !camera || !renderer) return;
+
+      const overlay = document.getElementById('start-overlay');
+      if (!overlay || !overlay.classList.contains('active')) {
+        isThreeActive = false;
+        return;
+      }
+
+      tetrominoMeshes.forEach((obj, i) => {
+        if (!obj || !obj.parent) return;
+
+        if (obj.userData.rotSpeed) {
+          obj.rotation.y += obj.userData.rotSpeed * 0.012;
+          obj.rotation.x = Math.sin(Date.now() * 0.0008 + i) * 0.22;
+        }
+
+        if (obj.userData.floatSpeed) {
+          obj.position.y += Math.sin(Date.now() * 0.0014 + i) * 0.1;
+        }
+
+        if (obj.position.z < 160) {
+          obj.position.z += 2.1;
+        }
+
+        // Repulsion
+        tetrominoMeshes.forEach(other => {
+          if (other === obj || !other.parent || other.userData?.exploded) return;
+          const dx = obj.position.x - other.position.x;
+          const dy = obj.position.y - other.position.y;
+          const dz = obj.position.z - other.position.z;
+          const distSq = dx*dx + dy*dy + dz*dz;
+
+          if (distSq > 0.1 && distSq < 4200) {
+            const dist = Math.sqrt(distSq);
+            const force = (65 - dist) * 0.028;
+            obj.position.x += (dx / dist) * force;
+            obj.position.y += (dy / dist) * force;
+            obj.position.z += (dz / dist) * force * 0.5;
+          }
+        });
+
+        if (obj.userData.velocity) {
+          obj.position.add(obj.userData.velocity);
+          obj.userData.velocity.y -= 0.09;
+          obj.userData.life--;
+
+          if (obj.userData.life <= 0) {
+            scene.remove(obj);
+            const idx = tetrominoMeshes.indexOf(obj);
+            if (idx > -1) tetrominoMeshes.splice(idx, 1);
+          }
+        }
+      });
+
+      renderer.render(scene, camera);
+    }
+
+    function launchGameWithEffect() {
+      const overlay = document.getElementById('start-overlay');
+      const threeContainer = document.getElementById('three-container');
+
+      overlay.classList.add('rushing', 'glitching');
+      isThreeActive = false;
+
+      tetrominoMeshes.forEach(obj => {
+        if (obj && obj.parent && !obj.userData.exploded) {
+          const color = obj.children?.[0]?.material?.color?.getHex() || 0x00f9ff;
+
+          for (let k = 0; k < 11; k++) {
+            const size = 5 + Math.random() * 7;
+            const geo = new THREE.BoxGeometry(size, size, size);
+            const mat = new THREE.MeshPhongMaterial({ color });
+            const p = new THREE.Mesh(geo, mat);
+            p.position.copy(obj.position);
+            p.userData.velocity = new THREE.Vector3(
+              (Math.random() - 0.5) * 5.5,
+              (Math.random() - 0.5) * 5.5 + 2.2,
+              (Math.random() - 0.5) * 4
+            );
+            p.userData.life = 55 + Math.random() * 35;
+            scene.add(p);
+            tetrominoMeshes.push(p);
+          }
+          scene.remove(obj);
+        }
+      });
+      tetrominoMeshes = [];
+
+      Audio.play('explosion');
+
+      if (threeContainer) {
+        threeContainer.style.transition = 'opacity 0.45s ease, transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
+        threeContainer.style.opacity = '0';
+        threeContainer.style.transform = 'scale(1.12)';
+      }
+
+      setTimeout(() => {
+        overlay.classList.remove('active', 'rushing', 'glitching');
+
+        if (renderer) {
+          renderer.dispose();
+          const container = document.getElementById('three-container');
+          if (container) container.innerHTML = '';
+        }
+
+        startGame();
+      }, 1050);
+    }
+
+    window.onload = function() {
+      setTimeout(() => {
+        initThreeJS();
+      }, 120);
+    };
   </script>
 </body>
 </html>
