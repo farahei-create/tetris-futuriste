@@ -5,26 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>TETRIS NÉON // 2084</title>
   <link rel="stylesheet" href="styles.css">
-  <style>
-    #three-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2;
-      pointer-events: auto;
-      transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-    }
-    .overlay-content {
-      z-index: 10;
-      position: relative;
-    }
-    .start-overlay.rushing #three-container {
-      opacity: 0;
-      transform: scale(1.15);
-    }
-  </style>
 </head>
 <body>
   <div class="container">
@@ -33,7 +13,7 @@
       <p class="subtitle">2084 • CYBERPUNK EDITION</p>
     </header>
 
-    <!-- HUD AU DESSUS DU JEU -->
+    <!-- HUD PROPRE AU DESSUS -->
     <div class="top-hud">
       <div class="hud-group">
         <div class="hud-item">
@@ -63,13 +43,13 @@
       </div>
     </div>
 
-    <!-- ZONE DE JEU -->
+    <!-- PLATEAU DE JEU -->
     <div class="game-wrapper">
       <div class="holo-frame"></div>
       <canvas id="board" width="320" height="640"></canvas>
     </div>
 
-    <!-- CONTRÔLES EN BAS (hors de la fenêtre) -->
+    <!-- CONTRÔLES EN BAS (HORS DU JEU) -->
     <div id="controls-overlay" class="controls-below">
       <div class="controls-main">
         <button class="control-btn" onclick="moveLeft()">←</button>
@@ -137,7 +117,7 @@
   <script src="script.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
-    // Three.js + Audio code (same as before)
+    // Three.js welcome screen + Audio (same as before)
     let scene, camera, renderer, tetrominoMeshes = [], isThreeActive = true;
 
     function initThreeJS() {
