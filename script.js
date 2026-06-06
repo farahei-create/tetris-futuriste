@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE v3.5 - Smaller panels + Better piece centering === */
+/* === TETRIS NÉON FUTURISTE v3.6 - Coin/Pickup style sounds === */
 
 let BLOCK_SIZE = 28;
 const COLS = 10;
@@ -236,7 +236,6 @@ function resizeGame() {
   canvas.width = COLS * BLOCK_SIZE;
   canvas.height = ROWS * BLOCK_SIZE;
 
-  // Smaller next/hold canvases for better proportion
   const nextSize = Math.min(95, BLOCK_SIZE * 3.4 + 4);
   if (nextCanvas) {
     nextCanvas.width = nextSize;
@@ -479,7 +478,7 @@ function holdPiece() {
   canHold = false;
   drawHoldPiece();
   draw();
-  playSound('rotate');
+  playSound('pickup');
 }
 
 function lockPiece() {
@@ -590,7 +589,7 @@ function drawGrid() {
   for (let y = 0; y <= ROWS; y++) {
     ctx.beginPath();
     ctx.moveTo(0, y * BLOCK_SIZE);
-    ctx.lineTo(canvas.width, y * BLOCK_SIZE);
+    ctx.lineTo(canvas.height, y * BLOCK_SIZE);
     ctx.stroke();
   }
 }
@@ -620,8 +619,6 @@ function drawBoard() {
     }
   }
 }
-
-// HOLOGRAPHIC
 
 function drawBlock(x, y, color) {
   const px = x * BLOCK_SIZE;
@@ -686,126 +683,108 @@ function gameLoop(timestamp = 0) {
   animationFrame = requestAnimationFrame(gameLoop);
 }
 
-// SOUNDS
+// ==================== COIN / PICKUP STYLE SOUNDS ====================
 let audioCtx;
+
 function initAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
 }
 
 function playSound(type) {
-  if (!soundEnabled || !audioCtx) {
-    if (!audioCtx) initAudio();
-    if (!audioCtx || !soundEnabled) return;
-  }
+  if (!soundEnabled) return;
+  initAudio();
+  if (!audioCtx) return;
+
   const now = audioCtx.currentTime;
 
-  if (type === 'clear') {
-    const noise = audioCtx.createBufferSource();
-    const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.55, audioCtx.sampleRate);
-    const data = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-    noise.buffer = noiseBuffer;
-
-    const noiseFilter = audioCtx.createBiquadFilter();
-    noiseFilter.type = 'bandpass';
-    noiseFilter.frequency.value = 780;
-    noiseFilter.Q.value = 1.6;
-
-    const noiseGain = audioCtx.createGain();
-    noiseGain.gain.value = 0.55;
-    const noiseEnv = audioCtx.createGain();
-
+  // Coin / Pickup style (bright, short, positive)
+  if (type === 'pickup' || type === 'move' || type === 'rotate') {
     const osc = audioCtx.createOscillator();
-    osc.type = 'sawtooth';
-    osc.frequency.value = 158;
-    const oscFilter = audioCtx.createBiquadFilter();
-    oscFilter.type = 'lowpass';
-    oscFilter.frequency.value = 1080;
-    const oscGain = audioCtx.createGain();
-    oscGain.gain.value = 0.4;
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
 
-    const masterGain = audioCtx.createGain();
-    noiseEnv.gain.setValueAtTime(0.65, now);
-    noiseEnv.gain.linearRampToValueAtTime(0.001, now + 0.52);
-    oscGain.gain.setValueAtTime(0.4, now);
-    oscGain.gain.linearRampToValueAtTime(0.001, now + 0.4);
-    masterGain.gain.value = 0.82;
+    osc.type = 'square';
+    filter.type = 'lowpass';
+    filter.frequency.value = 2200;
 
-    noise.connect(noiseFilter);
-    noiseFilter.connect(noiseEnv);
-    noiseEnv.connect(masterGain);
-    osc.connect(oscFilter);
-    oscFilter.connect(oscGain);
-    oscGain.connect(masterGain);
-    masterGain.connect(audioCtx.destination);
+    if (type === 'pickup') {
+      osc.frequency.value = 880;
+      gain.gain.value = 0.45;
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.linearRampToValueAtTime(1320, now + 0.12);
+      gain.gain.setValueAtTime(0.45, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.18);
+    } else if (type === 'move') {
+      osc.frequency.value = 620 + Math.random() * 40;
+      gain.gain.value = 0.28;
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.09);
+    } else if (type === 'rotate') {
+      osc.frequency.value = 780;
+      gain.gain.value = 0.38;
+      osc.frequency.setValueAtTime(780, now);
+      osc.frequency.linearRampToValueAtTime(1050, now + 0.1);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.16);
+    }
 
-    noise.start(now);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
     osc.start(now);
-    noise.stop(now + 0.55);
-    osc.stop(now + 0.42);
+    osc.stop(now + 0.25);
     return;
   }
 
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  const filter = audioCtx.createBiquadFilter();
-  filter.type = 'lowpass';
-  let freq = 225, duration = 0.115, volume = 0.26;
-  osc.type = 'sawtooth';
-
-  switch (type) {
-    case 'move':
-      osc.type = 'square';
-      freq = 152 + Math.random() * 32;
-      duration = 0.038;
-      volume = 0.16;
-      filter.frequency.value = 840;
-      break;
-    case 'rotate':
-      osc.type = 'sawtooth';
-      freq = 475;
-      duration = 0.095;
-      volume = 0.24;
-      filter.frequency.value = 1480;
-      osc.frequency.setValueAtTime(475, now);
-      osc.frequency.linearRampToValueAtTime(695, now + 0.075);
-      break;
-    case 'lock':
-      osc.type = 'sawtooth';
-      freq = 84;
-      duration = 0.19;
-      volume = 0.34;
-      filter.frequency.value = 620;
-      break;
-    case 'hard':
-      osc.type = 'sawtooth';
-      freq = 62;
-      duration = 0.26;
-      volume = 0.48;
-      filter.frequency.value = 410;
-      const osc2 = audioCtx.createOscillator();
-      osc2.type = 'sine';
-      osc2.frequency.value = 49;
-      const g2 = audioCtx.createGain();
-      g2.gain.value = 0.3;
-      osc2.connect(g2);
-      g2.connect(audioCtx.destination);
-      osc2.start(now);
-      osc2.stop(now + 0.32);
-      break;
+  if (type === 'lock') {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.value = 95;
+    gain.gain.value = 0.38;
+    gain.gain.linearRampToValueAtTime(0.001, now + 0.22);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.28);
+    return;
   }
 
-  osc.frequency.value = freq;
-  gain.gain.value = volume;
-  const master = audioCtx.createGain();
-  gain.gain.setValueAtTime(volume, now);
-  gain.gain.linearRampToValueAtTime(0.001, now + duration);
-  osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(master);
-  master.connect(audioCtx.destination);
-  osc.start(now);
-  osc.stop(now + duration + 0.035);
+  if (type === 'clear') {
+    // Nice line clear with coin-like brightness
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        osc.type = 'sawtooth';
+        osc.frequency.value = 520 + (i * 110);
+        filter.type = 'lowpass';
+        filter.frequency.value = 1800;
+        gain.gain.value = 0.42;
+        gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+      }, i * 55);
+    }
+    return;
+  }
+
+  if (type === 'hard') {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.value = 68;
+    gain.gain.value = 0.5;
+    gain.gain.linearRampToValueAtTime(0.001, now + 0.32);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.38);
+  }
 }
 
 // Touch & Keyboard
@@ -996,7 +975,7 @@ function init() {
     if (!gameOver && !paused && controlsOverlay) hideControls();
   }, 1900);
 
-  console.log('%c[Tetris Neon v3.5] Smaller HOLD/Next panels + Perfect centering activés !', 'color:#00f9ff');
+  console.log('%c[Tetris Neon v3.6] Coin/Pickup style sounds activés !', 'color:#00f9ff');
 }
 
 init();
