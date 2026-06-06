@@ -6,9 +6,73 @@
   <title>TETRIS NÉON // 2084</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    #three-container { position:absolute; top:0; left:0; width:100%; height:100%; z-index:2; pointer-events:auto; transition:opacity .4s ease, transform .6s cubic-bezier(.23,1,.32,1); }
-    .overlay-content { z-index:10; position:relative; }
-    .hud-top { display: none; } /* HUD caché sur l'écran d'accueil */
+    /* === HUD PROPRE + CENTRÉ === */
+    .hud-top {
+      display: none; /* caché sur accueil */
+      justify-content: center;
+      align-items: flex-end;
+      gap: 14px;
+      max-width: 400px;
+      margin: 0 auto 14px auto;
+      padding: 10px 8px;
+      background: rgba(8,5,18,.78);
+      border-radius: 16px;
+      border: 1.5px solid rgba(0,249,255,.35);
+      box-shadow: 0 0 22px rgba(0,249,255,.22), 0 4px 16px rgba(0,0,0,.45);
+      backdrop-filter: blur(14px);
+      z-index: 15;
+    }
+    .hud-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: rgba(5,3,12,.65);
+      border: 1px solid rgba(157,78,221,.4);
+      border-radius: 12px;
+      padding: 8px 8px 6px;
+      box-shadow: 0 0 12px rgba(0,249,255,.1);
+      flex: 1;
+      min-width: 0;
+    }
+    .hud-section.hold-section,
+    .hud-section.next-section {
+      flex: 1.15;
+      min-width: 115px;
+    }
+    .stats-section {
+      flex-direction: row;
+      gap: 8px;
+      align-items: flex-end;
+      background: transparent;
+      border: none;
+      padding: 0;
+      box-shadow: none;
+      flex: 1.25;
+    }
+    .hud-item {
+      background: rgba(8,5,18,.9);
+      border: 1.5px solid #9d4edd;
+      border-radius: 8px;
+      padding: 5px 9px;
+      text-align: center;
+      min-width: 64px;
+      box-shadow: 0 0 14px rgba(157,78,221,.3);
+    }
+    .hud-label { font-size: .5rem; color:#c084fc; text-transform:uppercase; letter-spacing:1.6px; font-weight:600; margin-bottom:1px; }
+    #score, #level, #lines { font-size:1.2rem; font-weight:700; color:#00f9ff; text-shadow:0 0 11px #00f9ff; font-family:'Courier New',monospace; }
+    #next-piece, #hold-piece {
+      border: 2px solid #ff00aa;
+      box-shadow: 0 0 12px #ff00aa, 0 0 24px rgba(255,0,170,.4);
+      border-radius: 8px;
+      background:#05050f;
+      display:block;
+    }
+    .hold-btn {
+      width:48px !important; height:24px !important; font-size:.58rem !important; font-weight:700;
+      border-radius:7px; background:rgba(8,5,18,.92); color:#00f9ff; border:2px solid #00f9ff;
+      box-shadow:0 0 12px #00f9ff; cursor:pointer; margin-top:3px;
+    }
   </style>
 </head>
 <body>
@@ -18,7 +82,7 @@
       <p class="subtitle">2084 • CYBERPUNK EDITION</p>
     </header>
 
-    <!-- HUD UNIFORME CÔTÉ À CÔTÉ AU-DESSUS (apparaît seulement pendant le jeu) -->
+    <!-- HUD CENTRÉ AU-DESSUS -->
     <div class="hud-top">
       <div class="hud-section hold-section">
         <div class="hud-label">HOLD</div>
@@ -51,6 +115,7 @@
         </div>
       </div>
 
+      <!-- PAGE DE BIENVENUE PROPRE -->
       <div id="start-overlay" class="start-overlay active">
         <div id="three-container"></div>
         <div class="overlay-content">
@@ -108,10 +173,12 @@
     function explodeTetromino(group){if(group.userData.exploded)return;group.userData.exploded=true;Audio.play('explosion');const wp=new THREE.Vector3();group.getWorldPosition(wp);scene.remove(group);const idx=tetrominoMeshes.indexOf(group);if(idx>-1)tetrominoMeshes.splice(idx,1);const pmat=new THREE.MeshPhongMaterial({color:group.children[0].material.color,shininess:20});for(let i=0;i<14;i++){const s=6+Math.random()*7;const geo=new THREE.BoxGeometry(s,s,s);const p=new THREE.Mesh(geo,pmat);p.position.copy(wp);p.position.x+=(Math.random()-.5)*30;p.position.y+=(Math.random()-.5)*30;p.userData.velocity=new THREE.Vector3((Math.random()-.5)*4.8,(Math.random()-.5)*4.8+2,(Math.random()-.5)*3.5);p.userData.life=60+Math.random()*40;scene.add(p);tetrominoMeshes.push(p)}}
     function animate(){requestAnimationFrame(animate);if(!scene||!camera||!renderer)return;const ov=document.getElementById('start-overlay');if(!ov||!ov.classList.contains('active')){isThreeActive=false;return}tetrominoMeshes.forEach((obj,i)=>{if(!obj||!obj.parent)return;if(obj.userData.rotSpeed){obj.rotation.y+=obj.userData.rotSpeed*.012;obj.rotation.x=Math.sin(Date.now()*.0008+i)*.22}if(obj.userData.floatSpeed)obj.position.y+=Math.sin(Date.now()*.0014+i)*.1;if(obj.position.z<160)obj.position.z+=2.1;tetrominoMeshes.forEach(other=>{if(other===obj||!other.parent||other.userData?.exploded)return;const dx=obj.position.x-other.position.x,dy=obj.position.y-other.position.y,dz=obj.position.z-other.position.z;const ds=dx*dx+dy*dy+dz*dz;if(ds>0.1&&ds<4200){const d=Math.sqrt(ds),f=(65-d)*.028;obj.position.x+=(dx/d)*f;obj.position.y+=(dy/d)*f;obj.position.z+=(dz/d)*f*.5}});if(obj.userData.velocity){obj.position.add(obj.userData.velocity);obj.userData.velocity.y-=.09;obj.userData.life--;if(obj.userData.life<=0){scene.remove(obj);const id=tetrominoMeshes.indexOf(obj);if(id>-1)tetrominoMeshes.splice(id,1)}}});renderer.render(scene,camera)}
 
+    // === TRANSITION PROPRE FUTURISTE ===
     function launchGameWithEffect() {
       const overlay = document.getElementById('start-overlay');
       const wrapper = document.querySelector('.game-wrapper');
       const threeContainer = document.getElementById('three-container');
+      const hud = document.querySelector('.hud-top');
 
       overlay.style.transition = 'opacity .35s ease, transform .4s ease';
       overlay.style.opacity = '0';
@@ -129,6 +196,7 @@
           if (threeContainer) threeContainer.innerHTML = '';
         }
 
+        if (hud) hud.style.display = 'flex';
         startGame();
       }, 420);
     }
