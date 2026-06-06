@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE - Explosions + Shockwave Effects === */
+/* === TETRIS NÉON FUTURISTE - HUD horizontal fix === */
 
 body {
   background: #020208;
@@ -68,10 +68,18 @@ h1:hover {
   top: 8px;
   left: 8px;
   right: 8px;
-  display: flex;
+  display: flex !important;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
   z-index: 5;
   pointer-events: none;
+}
+
+.hud-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .hud-item {
