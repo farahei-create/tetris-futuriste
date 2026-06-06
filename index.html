@@ -33,33 +33,43 @@
       <p class="subtitle">2084 • CYBERPUNK EDITION</p>
     </header>
 
+    <!-- NOUVEAU HUD HORIZONTAL - CÔTÉ À CÔTÉ AU-DESSUS ET EN DEHORS DU JEU -->
+    <div class="hud-top">
+      <!-- HOLD -->
+      <div class="hud-section hold-section">
+        <div class="hud-label">HOLD</div>
+        <canvas id="hold-piece" width="70" height="70"></canvas>
+        <button id="hold-btn" onclick="holdPiece()" class="control-btn hold-btn">HOLD</button>
+      </div>
+
+      <!-- STATS (Score / Niveau / Lignes) - CÔTÉ À CÔTÉ -->
+      <div class="hud-section stats-section">
+        <div class="hud-item">
+          <div class="hud-label">SCORE</div>
+          <div id="score">000000</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">NIVEAU</div>
+          <div id="level">01</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">LIGNES</div>
+          <div id="lines">000</div>
+        </div>
+      </div>
+
+      <!-- NEXT -->
+      <div class="hud-section next-section">
+        <div class="hud-label">SUIVANTE</div>
+        <canvas id="next-piece" width="70" height="70"></canvas>
+      </div>
+    </div>
+
     <div class="game-wrapper" style="position: relative;">
       <div class="holo-frame"></div>
       <canvas id="board" width="320" height="640"></canvas>
 
-      <div class="hold-panel">
-        <div class="hud-item">
-          <div class="hud-label">HOLD</div>
-          <canvas id="hold-piece" width="70" height="70"></canvas>
-        </div>
-        <button id="hold-btn" onclick="holdPiece()" class="control-btn hold-btn">HOLD</button>
-      </div>
-
-      <div class="floating-hud">
-        <div class="hud-panel left">
-          <div class="hud-item"><div class="hud-label">SCORE</div><div id="score">000000</div></div>
-          <div class="hud-item"><div class="hud-label">NIVEAU</div><div id="level">01</div></div>
-          <div class="hud-item"><div class="hud-label">LIGNES</div><div id="lines">000</div></div>
-        </div>
-
-        <div class="hud-panel right">
-          <div class="hud-item next">
-            <div class="hud-label">SUIVANTE</div>
-            <canvas id="next-piece" width="70" height="70"></canvas>
-          </div>
-        </div>
-      </div>
-
+      <!-- Contrôles tactiles (gardés à l'intérieur pour overlay sur le jeu) -->
       <div id="controls-overlay" class="controls-overlay">
         <div class="controls-main">
           <button class="control-btn" onclick="moveLeft()" aria-label="Gauche">←</button>
