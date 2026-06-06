@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE - HUD horizontal fix === */
+/* === HUD HORIZONTAL FIX - FORCE === */
 
 body {
   background: #020208;
@@ -69,17 +69,19 @@ h1:hover {
   left: 8px;
   right: 8px;
   display: flex !important;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  flex-wrap: nowrap !important;
   z-index: 5;
   pointer-events: none;
 }
 
 .hud-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
 }
 
 .hud-item {
