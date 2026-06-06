@@ -1,4 +1,4 @@
-/* === TETRIS NÉON FUTURISTE v3.6 - Coin/Pickup style sounds === */
+/* === TETRIS NÉON FUTURISTE v3.7 - Sound fix + robust audio === */
 
 let BLOCK_SIZE = 28;
 const COLS = 10;
@@ -38,7 +38,6 @@ let animationFrame = null;
 let glitchIntensity = 0;
 let isFullscreenMode = false;
 
-// Settings
 let soundEnabled = true;
 let alwaysShowControls = false;
 let view3DEnabled = true;
@@ -46,8 +45,109 @@ let view3DEnabled = true;
 let touchStartX = 0;
 let touchStartY = 0;
 let touchStartTime = 0;
-
 let hideControlsTimer = null;
+
+let audioCtx;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function playSound(type) {
+  if (!soundEnabled) return;
+  initAudio();
+  if (!audioCtx) return;
+
+  const now = audioCtx.currentTime;
+
+  if (type === 'pickup' || type === 'move' || type === 'rotate') {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+
+    osc.type = 'square';
+    filter.type = 'lowpass';
+    filter.frequency.value = 2400;
+
+    if (type === 'pickup') {
+      osc.frequency.value = 920;
+      gain.gain.value = 0.5;
+      osc.frequency.linearRampToValueAtTime(1380, now + 0.13);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.2);
+    } else if (type === 'move') {
+      osc.frequency.value = 650 + Math.random() * 35;
+      gain.gain.value = 0.32;
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.08);
+    } else if (type === 'rotate') {
+      osc.frequency.value = 820;
+      gain.gain.value = 0.42;
+      osc.frequency.linearRampToValueAtTime(1120, now + 0.11);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.18);
+    }
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.3);
+    return;
+  }
+
+  if (type === 'lock') {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.value = 88;
+    gain.gain.value = 0.4;
+    gain.gain.linearRampToValueAtTime(0.001, now + 0.25);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.32);
+    return;
+  }
+
+  if (type === 'clear') {
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        osc.type = 'sawtooth';
+        osc.frequency.value = 540 + (i * 95);
+        filter.type = 'lowpass';
+        filter.frequency.value = 1900;
+        gain.gain.value = 0.45;
+        gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.55);
+      }, i * 50);
+    }
+    return;
+  }
+
+  if (type === 'hard') {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.value = 72;
+    gain.gain.value = 0.55;
+    gain.gain.linearRampToValueAtTime(0.001, now + 0.35);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.42);
+  }
+}
 
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d', { alpha: true });
@@ -115,13 +215,11 @@ function saveSettings() {
 
 function applySettings() {
   const wrapper = document.querySelector('.game-wrapper');
-
   if (view3DEnabled && isFullscreenMode) {
     wrapper.classList.add('playing-3d');
   } else {
     wrapper.classList.remove('playing-3d');
   }
-
   if (alwaysShowControls && !paused && !gameOver) {
     showControls();
     clearTimeout(hideControlsTimer);
@@ -139,27 +237,20 @@ function hideSettings() {
 }
 
 function updateSetting(setting, value) {
-  if (setting === 'sound') {
-    soundEnabled = value;
-  } else if (setting === 'controls') {
-    alwaysShowControls = value;
-  } else if (setting === 'view3d') {
+  if (setting === 'sound') soundEnabled = value;
+  else if (setting === 'controls') alwaysShowControls = value;
+  else if (setting === 'view3d') {
     view3DEnabled = value;
     const wrapper = document.querySelector('.game-wrapper');
-    if (value && isFullscreenMode) {
-      wrapper.classList.add('playing-3d');
-    } else {
-      wrapper.classList.remove('playing-3d');
-    }
+    if (value && isFullscreenMode) wrapper.classList.add('playing-3d');
+    else wrapper.classList.remove('playing-3d');
   }
   saveSettings();
   applySettings();
 }
 
 function pauseFromHeader() {
-  if (!startOverlay.classList.contains('active') && !gameOver && !paused) {
-    togglePause();
-  }
+  if (!startOverlay.classList.contains('active') && !gameOver && !paused) togglePause();
 }
 
 function showControls() {
@@ -237,14 +328,8 @@ function resizeGame() {
   canvas.height = ROWS * BLOCK_SIZE;
 
   const nextSize = Math.min(95, BLOCK_SIZE * 3.4 + 4);
-  if (nextCanvas) {
-    nextCanvas.width = nextSize;
-    nextCanvas.height = nextSize;
-  }
-  if (holdCanvas) {
-    holdCanvas.width = nextSize;
-    holdCanvas.height = nextSize;
-  }
+  if (nextCanvas) { nextCanvas.width = nextSize; nextCanvas.height = nextSize; }
+  if (holdCanvas) { holdCanvas.width = nextSize; holdCanvas.height = nextSize; }
 
   initBackgroundBubbles();
   if (!gameOver && !paused && currentPiece) {
@@ -361,9 +446,7 @@ function drawHoldPiece() {
 function getGhostY() {
   if (!currentPiece) return 0;
   let y = currentPiece.y;
-  while (!collision({ type: currentPiece.type, rotation: currentPiece.rotation, x: currentPiece.x, y: y + 1 })) {
-    y++;
-  }
+  while (!collision({ type: currentPiece.type, rotation: currentPiece.rotation, x: currentPiece.x, y: y + 1 })) y++;
   return y;
 }
 
@@ -683,118 +766,13 @@ function gameLoop(timestamp = 0) {
   animationFrame = requestAnimationFrame(gameLoop);
 }
 
-// ==================== COIN / PICKUP STYLE SOUNDS ====================
-let audioCtx;
-
-function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-}
-
-function playSound(type) {
-  if (!soundEnabled) return;
-  initAudio();
-  if (!audioCtx) return;
-
-  const now = audioCtx.currentTime;
-
-  // Coin / Pickup style (bright, short, positive)
-  if (type === 'pickup' || type === 'move' || type === 'rotate') {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    const filter = audioCtx.createBiquadFilter();
-
-    osc.type = 'square';
-    filter.type = 'lowpass';
-    filter.frequency.value = 2200;
-
-    if (type === 'pickup') {
-      osc.frequency.value = 880;
-      gain.gain.value = 0.45;
-      osc.frequency.setValueAtTime(880, now);
-      osc.frequency.linearRampToValueAtTime(1320, now + 0.12);
-      gain.gain.setValueAtTime(0.45, now);
-      gain.gain.linearRampToValueAtTime(0.001, now + 0.18);
-    } else if (type === 'move') {
-      osc.frequency.value = 620 + Math.random() * 40;
-      gain.gain.value = 0.28;
-      gain.gain.linearRampToValueAtTime(0.001, now + 0.09);
-    } else if (type === 'rotate') {
-      osc.frequency.value = 780;
-      gain.gain.value = 0.38;
-      osc.frequency.setValueAtTime(780, now);
-      osc.frequency.linearRampToValueAtTime(1050, now + 0.1);
-      gain.gain.linearRampToValueAtTime(0.001, now + 0.16);
-    }
-
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + 0.25);
-    return;
-  }
-
-  if (type === 'lock') {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.value = 95;
-    gain.gain.value = 0.38;
-    gain.gain.linearRampToValueAtTime(0.001, now + 0.22);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + 0.28);
-    return;
-  }
-
-  if (type === 'clear') {
-    // Nice line clear with coin-like brightness
-    for (let i = 0; i < 3; i++) {
-      setTimeout(() => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        const filter = audioCtx.createBiquadFilter();
-        osc.type = 'sawtooth';
-        osc.frequency.value = 520 + (i * 110);
-        filter.type = 'lowpass';
-        filter.frequency.value = 1800;
-        gain.gain.value = 0.42;
-        gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.5);
-      }, i * 55);
-    }
-    return;
-  }
-
-  if (type === 'hard') {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.value = 68;
-    gain.gain.value = 0.5;
-    gain.gain.linearRampToValueAtTime(0.001, now + 0.32);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + 0.38);
-  }
-}
-
-// Touch & Keyboard
 function handleTouchStart(e) {
+  initAudio();
   if (gameOver || paused || !currentPiece) return;
   const rect = canvas.getBoundingClientRect();
   touchStartX = e.touches[0].clientX - rect.left;
   touchStartY = e.touches[0].clientY - rect.top;
   touchStartTime = Date.now();
-
   showControls();
   scheduleHideControls();
 }
@@ -824,17 +802,15 @@ function handleTouchEnd(e) {
     return;
   }
   if (deltaY > 36) {
-    if (duration < 165 && deltaY > 82) {
-      hardDrop();
-    } else {
-      softDrop();
-    }
+    if (duration < 165 && deltaY > 82) hardDrop();
+    else softDrop();
     showControls();
     scheduleHideControls();
   }
 }
 
 function handleKeyboard(e) {
+  initAudio();
   if (gameOver || paused) {
     if (e.key.toLowerCase() === 'r') restartGame();
     if (e.key.toLowerCase() === 'p' && !gameOver) togglePause();
@@ -863,13 +839,10 @@ function startGame() {
 
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen().catch(() => {});
-  } else if (wrapper.requestFullscreen) {
-    wrapper.requestFullscreen().catch(() => {});
   }
 
   const finalizeLaunch = () => {
     wrapper.classList.remove('launching');
-    wrapper.removeEventListener('transitionend', finalizeLaunch);
     isFullscreenMode = true;
     resetGame();
     lastDropTime = performance.now();
@@ -877,10 +850,7 @@ function startGame() {
     showControls();
     scheduleHideControls();
     setTimeout(resizeGame, 80);
-
-    if (view3DEnabled) {
-      wrapper.classList.add('playing-3d');
-    }
+    if (view3DEnabled) wrapper.classList.add('playing-3d');
   };
   wrapper.addEventListener('transitionend', finalizeLaunch, { once: true });
 }
@@ -891,10 +861,8 @@ function togglePause() {
   if (paused) {
     cancelAnimationFrame(animationFrame);
     pauseOverlay.classList.add('active');
-    settingsOverlay.classList.remove('active');
   } else {
     pauseOverlay.classList.remove('active');
-    settingsOverlay.classList.remove('active');
     lastDropTime = performance.now();
     animationFrame = requestAnimationFrame(gameLoop);
     showControls();
@@ -907,9 +875,7 @@ function endGame() {
   cancelAnimationFrame(animationFrame);
   saveBestScore();
   document.getElementById('final-score').textContent = `Score final : ${score.toString().padStart(6, '0')}`;
-  setTimeout(() => {
-    gameOverOverlay.classList.add('active');
-  }, 280);
+  setTimeout(() => gameOverOverlay.classList.add('active'), 280);
 }
 
 function restartGame() {
@@ -932,19 +898,13 @@ function init() {
   loadSettings();
 
   const soundToggle = document.getElementById('sound-toggle');
-  if (soundToggle) {
-    soundToggle.addEventListener('change', (e) => updateSetting('sound', e.target.checked));
-  }
+  if (soundToggle) soundToggle.addEventListener('change', e => updateSetting('sound', e.target.checked));
 
   const controlsToggle = document.getElementById('controls-always-show');
-  if (controlsToggle) {
-    controlsToggle.addEventListener('change', (e) => updateSetting('controls', e.target.checked));
-  }
+  if (controlsToggle) controlsToggle.addEventListener('change', e => updateSetting('controls', e.target.checked));
 
   const view3DToggle = document.getElementById('view-3d-toggle');
-  if (view3DToggle) {
-    view3DToggle.addEventListener('change', (e) => updateSetting('view3d', e.target.checked));
-  }
+  if (view3DToggle) view3DToggle.addEventListener('change', e => updateSetting('view3d', e.target.checked));
 
   if (controlsOverlay) {
     controlsOverlay.style.opacity = '0.12';
@@ -959,23 +919,15 @@ function init() {
   document.addEventListener('keydown', handleKeyboard);
   canvas.addEventListener('touchstart', handleTouchStart, { passive: true });
   canvas.addEventListener('touchend', handleTouchEnd, { passive: true });
-  document.addEventListener('gesturestart', e => e.preventDefault());
 
   document.querySelectorAll('.control-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      showControls();
-      scheduleHideControls();
-    });
+    btn.addEventListener('click', () => { showControls(); scheduleHideControls(); });
   });
 
   ctx.fillStyle = '#05050f';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  setTimeout(() => {
-    if (!gameOver && !paused && controlsOverlay) hideControls();
-  }, 1900);
-
-  console.log('%c[Tetris Neon v3.6] Coin/Pickup style sounds activés !', 'color:#00f9ff');
+  console.log('%c[Tetris Neon v3.7] Sons coin + audio robuste activés', 'color:#00f9ff');
 }
 
 init();
